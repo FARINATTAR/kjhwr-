@@ -6,7 +6,8 @@ to predict interval-by-interval forecast confidence scores (0-100%) and feature 
 Provides energy traders with an actionable reliability index before submitting
 physical notifications and auction bids.
 """
-from typing import Dict, List, Optional
+from __future__ import annotations
+from typing import Dict, List, Optional, Tuple
 import math
 from datetime import datetime
 
@@ -33,9 +34,10 @@ class ForecastConfidenceModel:
         ]
         self._is_trained = False
 
-    def _extract_features(self, paired_series: List[Dict]) -> Tuple_Features:
+    def _extract_features(self, paired_series: List[Dict]) -> Tuple[List[list], List[float]]:
         X = []
         y = []
+
         for item in paired_series:
             sp = item["settlementPeriod"]
             f_mw = item["dayAheadForecastMW"]
@@ -195,7 +197,6 @@ class ForecastConfidenceModel:
             "data": []
         }
 
-Tuple_Features = tuple
-
 # Global singleton instance
 forecast_model = ForecastConfidenceModel()
+
