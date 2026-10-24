@@ -9,169 +9,174 @@
 
 ---
 
-## What This Solves
+## Problem
 
-A UK energy utility must buy power in the Day-Ahead auction (D-1) before delivery. Wind generation is weather-dependent, so forecast errors create **imbalance penalties** under the Balancing and Settlement Code (BSC).
+A UK energy utility buys power one day before delivery in the Day-Ahead auction. Since wind output depends on weather, forecasts are never perfect. When the forecast is wrong, the utility pays **imbalance penalties** -- and these penalties are not symmetric. Over-predicting wind costs more than under-predicting it.
 
-Standard error metrics (MAE) treat over-prediction and under-prediction equally. The BSC does not -- penalties are asymmetric through System Buy Price (SBP) and System Sell Price (SSP) mechanisms.
+Standard accuracy metrics like MAE (Mean Absolute Error) treat both directions equally. The real market does not.
 
-WindCast addresses this by:
+WindCast closes this gap by:
 
-- Enforcing zero-lookahead temporal isolation at D-1 11:00 GMT gate closure
-- Quantifying real monetary exposure under SBP/SSP cash-out pricing
-- Applying statistical debiasing and ML reliability scoring to reduce penalty exposure
+- Locking forecasts at the auction deadline (11:00 GMT, one day before delivery) so no future data leaks in
+- Calculating the actual financial penalty for each forecast error using real market pricing rules
+- Correcting systematic forecast bias to reduce penalty exposure
 
 ---
 
 ## Architecture
 
-```
-                         HTTPS / REST (JSON)
-  +-----------------+         |         +---------------------+
-  |                 |         |         |                     |
-  |    Frontend     | ------> | ------> |    Backend API      |
-  |    (Vercel)     |         |         |    (Render)         |
-  |                 |         |         |                     |
-  |  React 18       |                   |  FastAPI            |
-  |  TypeScript     |                   |  Python 3.11        |
-  |  Vite           |                   |  Pydantic v2        |
-  |  Recharts       |                   |  scikit-learn       |
-  |                 |                   |                     |
-  +-----------------+                   +----------+----------+
-                                                   |
-                                            SQLite (B-Tree)
-                                                   |
-                                        +----------+----------+
-                                        |                     |
-                                        |    Data Layer       |
-                                        |                     |
-                                        |  1,488 actuals      |
-                                        |  5,952 forecasts    |
-                                        |  Jan 2026 ESO       |
-                                        |                     |
-                                        +---------------------+
+```mermaid
+graph TD
+    A["Frontend<br/><i>React 18 + TypeScript + Vite + Recharts</i>"] -->|"HTTPS / REST (JSON)"| B["Backend API<br/><i>FastAPI + Python 3.11</i>"]
+    B --> C["Trading Service<br/><i>Auction cutoff filtering, forecast pairing</i>"]
+    B --> D["Metrics Service<br/><i>MAE, RMSE, ramp rates, settlement profiles</i>"]
+    B --> E["Bias Correction<br/><i>Rolling window debiasing per time slot</i>"]
+    B --> F["Financial Engine<br/><i>Imbalance penalty calculation</i>"]
+    B --> G["Forecast Model<br/><i>Random Forest reliability scoring</i>"]
+    B --> H["Sensitivity Analysis<br/><i>Multi-horizon error decay</i>"]
+    C --> I["SQLite Database<br/><i>1,488 actuals + 5,952 forecasts</i><br/><i>January 2026, UK National Grid ESO</i>"]
+    D --> I
+    E --> I
+    F --> I
+    G --> I
+    H --> I
+
+    style A fill:#1a1a2e,stroke:#059669,color:#fff
+    style B fill:#1a1a2e,stroke:#0284c7,color:#fff
+    style I fill:#1a1a2e,stroke:#f59e0b,color:#fff
 ```
 
-**Data source**: UK National Grid ESO -- FUELHH (actual wind outturn) and WINDFOR (day-ahead forecasts) for January 2026.
+**Hosting**: Frontend on Vercel, Backend on Render.
+
+**Data**: UK National Grid ESO FUELHH (actual wind output, half-hourly) and WINDFOR (day-ahead forecasts) for January 2026.
 
 ---
 
-## Core Mechanics
+## How It Works
 
-### 1. Gate Closure and Zero-Lookahead Isolation
+### 1. Auction Cutoff (Zero-Lookahead)
 
-Day-Ahead auctions close at 11:00 GMT on D-1. The engine enforces:
-
-```
-Cutoff = Date(T_delivery - 1 day) + 11:00 GMT
-```
-
-Any forecast published after this cutoff is excluded from pairing. This prevents data leakage and ensures test accuracy reflects real trading conditions.
-
-### 2. Asymmetric Cash-Out Exposure
-
-**Wind deficit** (forecast > actual) -- utility is short, buys at SBP:
+The Day-Ahead auction closes at 11:00 GMT the day before delivery. The system only uses forecasts published before this deadline:
 
 ```
-Penalty_deficit = (Forecast - Actual) x 0.5h x (SBP - P_DA)
+Cutoff = (Delivery Date - 1 day) + 11:00 GMT
 ```
 
-**Wind surplus** (forecast < actual) -- utility is long, sells at SSP discount:
+Any forecast published after the cutoff is excluded. This guarantees no future information leaks into predictions.
+
+### 2. Penalty Calculation
+
+When wind output differs from the forecast, penalties apply:
+
+**Over-predicted** (forecast > actual) -- the utility is short on power and must buy emergency supply at a higher price (System Buy Price):
 
 ```
-Loss_surplus = (Actual - Forecast) x 0.5h x (P_DA - SSP)
+Deficit Penalty = (Forecast - Actual) x 0.5h x (Buy Price - Auction Price)
 ```
 
-### 3. Adaptive Rolling Debiasing
-
-A trailing calibration window (W = 1, 3, or 7 days) applied per settlement period:
+**Under-predicted** (forecast < actual) -- the utility has excess power and must sell at a lower price (System Sell Price):
 
 ```
-Bias(d,p) = (1/W) * SUM[k=1..W]( Forecast(d-k,p) - Actual(d-k,p) )
-
-Corrected(d,p) = max( 800 MW,  Forecast(d,p) - Bias(d,p) )
+Surplus Loss = (Actual - Forecast) x 0.5h x (Auction Price - Sell Price)
 ```
 
-The 800 MW floor enforces physical turbine output limits. Result: **15.2% MAE reduction** and **GBP 14,200 avoided imbalance losses**.
+### 3. Bias Correction
 
-### 4. Thermal Reserve Sizing (Non-Parametric Quantiles)
+Forecasts often have a consistent lean (e.g., always over-predicting by 200 MW). The system detects and corrects this using a rolling average of recent errors:
 
-- **P90 buffer: +1,842.3 MW** -- covers 90% of historical wind shortfalls
-- **P95 buffer: +2,197.4 MW** -- conservative reserve for extreme ramp events
+```
+Bias = Average of (Forecast - Actual) over past W days, per time slot
 
-Invariant: `P95 >= P90 > 0`
+Corrected Forecast = max(800 MW, Original Forecast - Bias)
+```
 
-### 5. ML Reliability Scoring
+The 800 MW floor prevents corrections from producing impossibly low values. Configurable windows: 1, 3, or 7 days.
 
-Random Forest model (scikit-learn) scores each forecast window 0-100% based on:
-- Forecast spread (max - min across publish times)
-- Forecast volatility (standard deviation)
-- Hour-of-day cyclical features
-- Forecast-to-recent-actual ratio
+**Result**: 15.2% reduction in MAE, GBP 14,200 in avoided penalties.
+
+### 4. Reserve Sizing
+
+How much backup thermal capacity should the utility keep ready?
+
+- **P90 (+1,842 MW)**: Covers 90% of historical wind shortfalls
+- **P95 (+2,197 MW)**: Conservative buffer for extreme weather events
+
+### 5. Reliability Scoring
+
+A Random Forest model (scikit-learn) scores each forecast 0--100% based on how consistent the forecast signals are across different publish times, time-of-day patterns, and recent actual output.
 
 ---
 
-## Mathematical Invariants
+## Key Formulas and Invariants
 
-These hold across all time horizons and are enforced in the test suite:
+These rules are enforced automatically in the test suite:
 
-| Invariant | Formula | Purpose |
-|:--|:--|:--|
-| Error convexity | `RMSE >= MAE > 0` | Proves correct statistical computation |
-| Buffer monotonicity | `P95 >= P90 > 0` | Ensures conservative reserve ordering |
-| Dispatch floor | `Y_corrected >= 800 MW` | Prevents physically impossible outputs |
-| Zero-error conservation | `Error = 0 implies Penalty = GBP 0.00` | Financial accounting consistency |
-| Penalty monotonicity | Higher spread implies higher penalty | Loss scales with market stress |
+| Rule | What it means |
+|:--|:--|
+| `RMSE >= MAE > 0` | Error metrics are mathematically consistent (RMSE always equals or exceeds MAE) |
+| `P95 >= P90 > 0` | The conservative reserve is always at least as large as the standard reserve |
+| `Corrected forecast >= 800 MW` | No forecast drops below the minimum physical wind output |
+| `Zero error = GBP 0 penalty` | A perfect forecast incurs no penalty |
+| `Higher price spread = higher penalty` | Penalties grow when market stress increases |
 
 ---
 
 ## API Endpoints
 
-Interactive Swagger UI: [windcast-analytics-api.onrender.com/docs](https://windcast-analytics-api.onrender.com/docs)
+Interactive docs: [windcast-analytics-api.onrender.com/docs](https://windcast-analytics-api.onrender.com/docs)
 
-| Method | Endpoint | Purpose |
-|:--|:--|:--|
-| GET | `/api/health` | Service health and database integrity |
-| GET | `/api/overview` | Executive KPIs for date range and gate closure |
-| GET | `/api/timeseries` | Paired 30-min actuals vs day-ahead forecast |
-| GET | `/api/metrics` | MAE, RMSE, MAPE, P90/P95 buffers |
-| GET | `/api/settlement-analysis` | 48-period diurnal profile with peak hour flags |
-| GET | `/api/daily-breakdown` | 31-day calendar of error trends |
-| GET | `/api/financial-impact` | Cash-out exposure under configurable SBP/SSP/DA prices |
-| GET | `/api/bias-correction` | Rolling debiased series with error reduction metrics |
-| GET | `/api/gate-closure-sensitivity` | Multi-horizon error decay across market milestones |
-| GET | `/api/forecast-confidence` | ML reliability score (0-100%) with feature weights |
+| Endpoint | What it returns |
+|:--|:--|
+| `GET /api/health` | System status and database record counts |
+| `GET /api/overview` | Summary KPIs (key performance indicators) for a date range |
+| `GET /api/timeseries` | Half-hourly actual vs forecast series |
+| `GET /api/metrics` | Accuracy metrics: MAE, RMSE, MAPE, reserve buffers |
+| `GET /api/settlement-analysis` | 48-period daily profile with peak hour flags |
+| `GET /api/daily-breakdown` | Day-by-day error trends for January 2026 |
+| `GET /api/financial-impact` | Penalty exposure under configurable price scenarios |
+| `GET /api/bias-correction` | Debiased forecast series and error improvement |
+| `GET /api/gate-closure-sensitivity` | How accuracy changes across forecast horizons |
+| `GET /api/forecast-confidence` | ML reliability score with feature importance |
 
-All endpoints return Pydantic-validated JSON. Key query parameters: `start_date`, `end_date`, `gate_closure_hour`, `window_days`, `sbp`, `ssp`, `da_price`.
+Common parameters: `start_date`, `end_date`, `gate_closure_hour`, `window_days`, `sbp`, `ssp`, `da_price`.
 
 ---
 
-## Test Suite -- 31 Tests Passing
+## Test Suite
 
-```
+31 tests, all passing. Run with:
+
+```bash
 cd backend
 python -m pytest tests/ -v
-# 31 passed in 7.47s
 ```
 
-Tests are organized into four files across six categories:
-
-| Category | Tests | What is Verified |
+| Category | Count | What is tested |
 |:--|:--|:--|
-| Temporal isolation | 2 | All paired forecasts obey `publish_time <= cutoff_time` -- eliminates lookahead bias |
-| Error invariants | 2 | `RMSE >= MAE > 0` holds across all horizons and periods |
-| Tail stress testing | 2 | P90/P95 buffers hold during storm spikes (>18 GW) and calm spells (<5 GW) |
-| Dispatch floor | 2 | Debiased outputs never drop below 800 MW physical threshold |
-| Financial conservation | 2 | Zero error yields GBP 0; penalties scale monotonically with spread |
-| API and data integrity | 21 | HTTP contracts on all 10 endpoints; database completeness (31 x 48 = 1,488 actuals) |
+| Temporal isolation | 2 | Forecasts never use data from after the auction cutoff |
+| Error math | 2 | RMSE >= MAE > 0 holds for every time horizon |
+| Extreme weather | 2 | Reserve buffers remain valid during storms (>18 GW) and calm spells (<5 GW) |
+| Physical limits | 2 | Corrected forecasts stay above 800 MW minimum |
+| Financial rules | 2 | Zero error gives zero penalty; penalties increase with price spread |
+| API contracts | 21 | All 10 endpoints return valid responses; database has 1,488 expected records |
 
-CI runs automatically via GitHub Actions (`ci.yml`) on every push.
+CI runs on every push via GitHub Actions.
+
+---
+
+## Live Deployments
+
+| Component | URL |
+|:--|:--|
+| Dashboard | [windcast-analytics.vercel.app](https://windcast-analytics.vercel.app) |
+| API Docs | [windcast-analytics-api.onrender.com/docs](https://windcast-analytics-api.onrender.com/docs) |
+| Health Check | [windcast-analytics-api.onrender.com/api/health](https://windcast-analytics-api.onrender.com/api/health) |
 
 ---
 
 ## Running Locally
 
-### Docker (recommended)
+**Docker (recommended):**
 
 ```bash
 git clone https://github.com/FARINATTAR/kjhwr-.git
@@ -179,47 +184,24 @@ cd kjhwr-
 docker compose up --build -d
 ```
 
-- Frontend: `http://localhost:3000`
-- Backend / Swagger: `http://localhost:8000/docs`
+Frontend: `http://localhost:3000` | Backend: `http://localhost:8000/docs`
 
-### Manual
+**Manual setup:**
 
-**Backend:**
 ```bash
+# Backend
 cd backend
 python -m venv .venv
-.venv\Scripts\activate        # Windows
-source .venv/bin/activate     # macOS / Linux
+.venv\Scripts\activate          # Windows
+source .venv/bin/activate       # macOS / Linux
 pip install -r requirements.txt
 python -m uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
-```
 
-**Frontend:**
-```bash
+# Frontend
 cd frontend
 npm install
-npm run dev
+npm run dev                     # Opens at http://localhost:5173
 ```
-
-Navigate to `http://localhost:5173`.
-
----
-
-## Live Deployments
-
-| Component | Platform | URL |
-|:--|:--|:--|
-| Web Dashboard | Vercel | [windcast-analytics.vercel.app](https://windcast-analytics.vercel.app) |
-| API and Swagger | Render | [windcast-analytics-api.onrender.com/docs](https://windcast-analytics-api.onrender.com/docs) |
-| Health Check | Render | [windcast-analytics-api.onrender.com/api/health](https://windcast-analytics-api.onrender.com/api/health) |
-
----
-
-## Future Scope
-
-1. **Battery storage (BESS) arbitrage dispatch** -- linear programming to absorb surplus wind during high-SSP periods and discharge during peak deficit
-2. **NWP model blending** -- gradient boosting (LightGBM/XGBoost) across ECMWF, GFS, and UK Met Office weather feeds with wind shear features
-3. **Real-time Elexon BMRS streaming** -- webhook ingestion for live REMIT outage messages and balancing publication data (B1610/B1630)
 
 ---
 
@@ -230,25 +212,23 @@ Navigate to `http://localhost:5173`.
 | Frontend | React 18, TypeScript, Vite, Recharts |
 | Backend | Python 3.11, FastAPI, Uvicorn, Pydantic v2 |
 | ML | scikit-learn (Random Forest) |
-| Database | SQLite with B-Tree temporal indexing |
-| CI/CD | GitHub Actions, Vercel (frontend), Render (backend) |
+| Database | SQLite with temporal indexing |
+| CI/CD | GitHub Actions, Vercel, Render |
 | Testing | pytest (31 tests) |
 
 ---
 
 ## AI Tools Used
 
-This project was built with pair-programming assistance from:
+Built with pair-programming assistance from:
 
-- **Claude Opus 4.6 Thinking** -- architecture design, service logic, test suite generation, and regulatory market mechanic modeling
-- **Gemini 3.8 Flash Medium** -- rapid scaffolding, code review, and iterative UI refinement
-
-Usage was permitted under the challenge specification.
+- **Claude Opus 4.6 Thinking** -- architecture, backend services, test suite, and market mechanic modeling
+- **Gemini 3.8 Flash Medium** -- frontend scaffolding, code review, and UI iteration
 
 ---
 
-## Data Scope
+## Future Scope
 
-January 2026, UK National Grid ESO:
-- **FUELHH**: Half-hourly actual wind generation outturn (1,488 intervals)
-- **WINDFOR**: Day-ahead wind generation forecasts (5,952 records across multiple publish times)
+- **Battery storage dispatch** -- optimize when to charge/discharge batteries based on wind surplus and deficit patterns
+- **Weather model blending** -- combine multiple weather forecast sources (ECMWF, GFS, UK Met Office) using gradient boosting for better wind predictions
+- **Live market data streaming** -- connect to Elexon BMRS for real-time balancing prices and outage notifications
