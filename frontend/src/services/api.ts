@@ -11,7 +11,7 @@ import type {
 } from '../types';
 
 
-const BASE_URL = import.meta.env.VITE_API_URL || '';
+const BASE_URL = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? '' : 'https://windcast-analytics-api.onrender.com');
 
 export const api = {
   async getOverview(
