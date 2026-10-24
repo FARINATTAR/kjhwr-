@@ -6,8 +6,10 @@ import type {
   AccuracyMetrics,
   FinancialImpactData,
   BiasCorrectionData,
-  GateClosureSensitivityItem
+  GateClosureSensitivityItem,
+  ForecastConfidenceData
 } from '../types';
+
 
 const BASE_URL = import.meta.env.VITE_API_URL || '';
 
@@ -103,6 +105,19 @@ export const api = {
     );
     if (!res.ok) throw new Error('Failed to fetch gate closure sensitivity');
     return res.json();
+  },
+
+  async getForecastConfidence(
+    startDate: string = '2026-01-01',
+    endDate: string = '2026-01-31',
+    gateClosureHour: number = 11
+  ): Promise<ForecastConfidenceData> {
+    const res = await fetch(
+      `${BASE_URL}/api/forecast-confidence?start_date=${startDate}&end_date=${endDate}&gate_closure_hour=${gateClosureHour}`
+    );
+    if (!res.ok) throw new Error('Failed to fetch forecast confidence data');
+    return res.json();
   }
 };
+
 

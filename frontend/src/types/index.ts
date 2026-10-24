@@ -136,3 +136,28 @@ export interface GateClosureSensitivityItem {
   sampleCount: number;
 }
 
+export interface ForecastConfidenceInterval {
+  startTime: string;
+  settlementDate: string;
+  settlementPeriod: number;
+  actualMW: number;
+  dayAheadForecastMW: number;
+  expectedUncertaintyMW: number;
+  confidenceScore: number;
+  confidenceTier: 'High' | 'Medium' | 'Low';
+}
+
+export interface ForecastConfidenceData {
+  average_confidence_pct: number;
+  overall_tier: 'High' | 'Medium' | 'Low';
+  high_confidence_count: number;
+  medium_confidence_count: number;
+  low_confidence_count: number;
+  total_intervals: number;
+  model_type: string;
+  feature_importances: Record<string, number>;
+  summary_recommendation: string;
+  data: ForecastConfidenceInterval[];
+}
+
+

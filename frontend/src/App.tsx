@@ -9,6 +9,7 @@ import { DailyBreakdown } from './components/DailyBreakdown';
 import { FinancialCalculator } from './components/FinancialCalculator';
 import { BiasCorrectionLab } from './components/BiasCorrectionLab';
 import { GateClosureCurve } from './components/GateClosureCurve';
+import { ForecastConfidenceLab } from './components/ForecastConfidenceLab';
 import { api } from './services/api';
 import type {
   TimeSeriesPoint,
@@ -17,7 +18,8 @@ import type {
   DailyBreakdownData
 } from './types';
 
-type ActiveTab = 'hedging' | 'financial' | 'bias' | 'sensitivity';
+type ActiveTab = 'hedging' | 'financial' | 'bias' | 'sensitivity' | 'confidence';
+
 
 export const App: React.FC = () => {
   const [gateClosureHour, setGateClosureHour] = useState<number>(11);
@@ -212,6 +214,39 @@ export const App: React.FC = () => {
         >
           <span>Timing & Accuracy</span>
         </button>
+
+        <button
+          onClick={() => setActiveTab('confidence')}
+          style={{
+            flex: 1,
+            minWidth: '180px',
+            padding: '10px 16px',
+            borderRadius: '8px',
+            border: activeTab === 'confidence' ? '1px solid #93c5fd' : '1px solid transparent',
+            background: activeTab === 'confidence' ? '#eff6ff' : 'transparent',
+            color: activeTab === 'confidence' ? '#1d4ed8' : '#64748b',
+            fontWeight: 600,
+            fontSize: '13px',
+            cursor: 'pointer',
+            transition: 'all 0.2s ease',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '6px'
+          }}
+        >
+          <span style={{
+            fontSize: '10px',
+            background: '#dbeafe',
+            color: '#1e40af',
+            padding: '1px 5px',
+            borderRadius: '4px',
+            fontWeight: 700
+          }}>
+            ML
+          </span>
+          <span>Forecast Reliability</span>
+        </button>
       </div>
 
       {/* Tab Content Display */}
@@ -250,6 +285,11 @@ export const App: React.FC = () => {
       {activeTab === 'sensitivity' && (
         <GateClosureCurve />
       )}
+
+      {activeTab === 'confidence' && (
+        <ForecastConfidenceLab gateClosureHour={gateClosureHour} />
+      )}
+
 
 
       <footer style={{

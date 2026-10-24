@@ -96,3 +96,14 @@ def test_gate_closure_sensitivity_endpoint():
     assert len(data) >= 6
     assert any("Intraday" in item["closureLabel"] for item in data)
 
+def test_forecast_confidence_endpoint():
+    response = client.get("/api/forecast-confidence?start_date=2026-01-01&end_date=2026-01-03&gate_closure_hour=11")
+    assert response.status_code == 200
+    data = response.json()
+    assert 0.0 <= data["average_confidence_pct"] <= 100.0
+    assert data["overall_tier"] in ["High", "Medium", "Low"]
+    assert "feature_importances" in data
+    assert data["total_intervals"] == 144  # 3 days * 48
+    assert len(data["data"]) == 144
+
+

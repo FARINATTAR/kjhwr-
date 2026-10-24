@@ -18,6 +18,7 @@ from app.services.metrics import (
 from app.services.financial import calculate_financial_impact
 from app.services.bias_correction import apply_bias_correction, compare_raw_vs_corrected
 from app.services.sensitivity import evaluate_gate_closure_sensitivity
+from app.services.forecast_model import forecast_model
 from app.schemas.models import (
     HealthResponse,
     OverviewResponse,
@@ -27,8 +28,10 @@ from app.schemas.models import (
     DailyBreakdownItem,
     FinancialImpactResponse,
     BiasCorrectionResponse,
-    GateClosureSensitivityItem
+    GateClosureSensitivityItem,
+    ForecastConfidenceResponse
 )
+
 
 router = APIRouter(prefix="/api")
 
@@ -196,4 +199,24 @@ def get_gate_closure_sensitivity(
     Demonstrates the quantitative value of updated information closer to physical delivery.
     """
     return evaluate_gate_closure_sensitivity(start_date=start_date, end_date=end_date)
+
+
+@router.get("/forecast-confidence", response_model=ForecastConfidenceResponse)
+def get_forecast_confidence(
+    start_date: str = Query(default="2026-01-01", description="Start date (YYYY-MM-DD)"),
+    end_date: str = Query(default="2026-01-31", description="End date (YYYY-MM-DD)"),
+    gate_closure_hour: int = Query(default=11, ge=0, le=23, description="Gate closure hour (D-1)")
+):
+    """
+    Machine Learning Forecast Confidence & Uncertainty Score.
+    Uses a Random Forest ensemble to predict forecast reliability (0-100%) and feature drivers.
+    Helps traders identify high-risk vs high-confidence settlement periods before submitting bids.
+    """
+    paired = get_day_ahead_paired_series(
+        start_date=start_date,
+        end_date=end_date,
+        gate_closure_hour=gate_closure_hour
+    )
+    return forecast_model.evaluate_confidence(paired)
+
 

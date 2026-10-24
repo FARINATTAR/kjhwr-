@@ -108,6 +108,17 @@ Evaluation across all 48 half-hour settlement periods identifies diurnal error p
 
 ---
 
+### 6. Machine Learning Forecast Reliability & Uncertainty Scoring
+
+To bridge meteorological forecasts with commercial trading actions, the platform features a lightweight Random Forest ensemble (`scikit-learn`):
+
+- **Target Metric**: Predicts interval-by-interval absolute error uncertainty and converts it into a standardized **Forecast Reliability Score (0–100%)**.
+- **Model Features**: Settlement period (diurnal time), Day-Ahead forecast volume (MW), day of the week, lead time to delivery (hours), and peak demand indicator.
+- **Explainability**: Quantifies feature importance drivers (e.g. forecast generation magnitude accounts for ~68% of error variance, diurnal timing accounts for ~11%).
+- **Operational Utility**: Classifies intervals into actionable trading tiers (High ≥80%, Medium 60–79%, Low <60%) and generates plain-English risk guidance for auction submission.
+
+---
+
 ## Technical Architecture
 
 ```
@@ -117,6 +128,7 @@ Evaluation across all 48 half-hour settlement periods identifies diurnal error p
 │  - Financial Imbalance Simulator with Parametric SBP/SSP Sliders      │
 │  - Rolling Bias-Correction Analytical Engine                           │
 │  - Multi-Horizon Gate Closure Sensitivity Curves                       │
+│  - ML Forecast Reliability Lab & Feature Importance Inspector          │
 │  - Diurnal Heatmap & 48-Period Settlement Distribution Profiler        │
 │  - High-Volume CSV Export Facility                                     │
 └───────────────────────────────────┬────────────────────────────────────┘
@@ -125,6 +137,7 @@ Evaluation across all 48 half-hour settlement periods identifies diurnal error p
 │                         Application API Layer                          │
 │  FastAPI (Python 3.11) / Uvicorn / Pydantic v2 Models                  │
 │  - Lookahead-free Temporal Filter Engine                               │
+│  - Random Forest Forecast Uncertainty & Confidence Scorer             │
 │  - Statistical Debiasing & Error Attribution Services                  │
 │  - Cash-Out Exposure & Balancing Mechanism Price Calculators           │
 └───────────────────────────────────┬────────────────────────────────────┘
@@ -155,6 +168,8 @@ All endpoints serve structured JSON responses validated against Pydantic schemas
 | `GET` | `/api/financial-impact` | Imbalance cash-out exposure calculator with configurable SBP/SSP/DA prices |
 | `GET` | `/api/bias-correction` | Rolling debiasing model evaluation, improvement percentages, and series |
 | `GET` | `/api/gate-closure-sensitivity` | Multi-horizon error and monetary loss decay curves across gate closures |
+| `GET` | `/api/forecast-confidence` | Random Forest ML reliability score (0-100%), feature importances, and tier schedule |
+
 
 Interactive OpenAPI documentation is accessible at `/docs` when the backend service is active.
 

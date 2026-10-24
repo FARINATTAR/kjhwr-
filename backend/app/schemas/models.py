@@ -124,3 +124,28 @@ class GateClosureSensitivityItem(BaseModel):
     imbalanceCostGBP: float
     sampleCount: int
 
+
+class ForecastConfidenceInterval(BaseModel):
+    startTime: str
+    settlementDate: str
+    settlementPeriod: int
+    actualMW: float
+    dayAheadForecastMW: float
+    expectedUncertaintyMW: float
+    confidenceScore: float
+    confidenceTier: str
+
+
+class ForecastConfidenceResponse(BaseModel):
+    average_confidence_pct: float
+    overall_tier: str
+    high_confidence_count: int
+    medium_confidence_count: int
+    low_confidence_count: int
+    total_intervals: int
+    model_type: str
+    feature_importances: Dict[str, float]
+    summary_recommendation: str
+    data: List[ForecastConfidenceInterval]
+
+
