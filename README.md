@@ -2,10 +2,26 @@
 
 **Day-Ahead Wind Generation Forecasting and Decision Terminal for UK Wholesale Electricity Markets**
 
-[![Live App](https://img.shields.io/badge/Live_App-windcast--analytics.vercel.app-059669?style=flat-square&logo=vercel)](https://windcast-analytics.vercel.app)
-[![API Docs](https://img.shields.io/badge/API_Docs-Swagger-0284c7?style=flat-square&logo=fastapi)](https://windcast-analytics-api.onrender.com/docs)
-[![Tests](https://img.shields.io/badge/Tests-31%2F31_Passing-10b981?style=flat-square&logo=pytest)](https://github.com/FARINATTAR/kjhwr-)
-[![CI](https://img.shields.io/badge/CI-Passing-10b981?style=flat-square&logo=githubactions)](https://github.com/FARINATTAR/kjhwr-)
+<p>
+  <a href="https://windcast-analytics.vercel.app"><img src="https://img.shields.io/badge/Live_App-windcast--analytics.vercel.app-059669?style=for-the-badge&logo=vercel" alt="Live App"/></a>
+  <a href="https://windcast-analytics-api.onrender.com/docs"><img src="https://img.shields.io/badge/API_Docs-Swagger-0284c7?style=for-the-badge&logo=fastapi" alt="API Docs"/></a>
+</p>
+<p>
+  <a href="https://github.com/FARINATTAR/kjhwr-"><img src="https://img.shields.io/badge/Tests-31%2F31_Passing-10b981?style=for-the-badge&logo=pytest" alt="Tests"/></a>
+  <a href="https://github.com/FARINATTAR/kjhwr-"><img src="https://img.shields.io/badge/CI_Pipeline-Passing-10b981?style=for-the-badge&logo=githubactions" alt="CI"/></a>
+</p>
+
+### Evaluation Status
+
+| Guardrail | Status | Tests |
+|:--|:--|:--|
+| Zero-lookahead (no future data leakage) | Passed | 2 |
+| Error metric consistency (RMSE >= MAE > 0) | Passed | 2 |
+| Extreme weather stress tests (storms and calm spells) | Passed | 2 |
+| Physical output floor (minimum 800 MW) | Passed | 2 |
+| Financial penalty conservation (zero error = zero cost) | Passed | 2 |
+| API contracts and data integrity (all 10 endpoints) | Passed | 21 |
+| **Total** | **All Passed** | **31** |
 
 ---
 
