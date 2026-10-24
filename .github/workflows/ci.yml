@@ -29,7 +29,8 @@ jobs:
       - name: Run Pytest test suite
         run: |
           cd backend
-          pytest -v
+          python -m pytest -v
+
 
   frontend-build:
     name: Frontend Typecheck & Build

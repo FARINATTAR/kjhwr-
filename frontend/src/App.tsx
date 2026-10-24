@@ -231,22 +231,12 @@ export const App: React.FC = () => {
             transition: 'all 0.2s ease',
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'center',
-            gap: '6px'
+            justifyContent: 'center'
           }}
         >
-          <span style={{
-            fontSize: '10px',
-            background: '#dbeafe',
-            color: '#1e40af',
-            padding: '1px 5px',
-            borderRadius: '4px',
-            fontWeight: 700
-          }}>
-            ML
-          </span>
-          <span>Forecast Reliability</span>
+          <span>Smart Reliability Scores</span>
         </button>
+
       </div>
 
       {/* Tab Content Display */}

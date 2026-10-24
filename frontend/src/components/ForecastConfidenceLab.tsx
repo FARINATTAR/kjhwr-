@@ -100,18 +100,17 @@ export const ForecastConfidenceLab: React.FC<Props> = ({ gateClosureHour }) => {
               textTransform: 'uppercase',
               letterSpacing: '0.05em'
             }}>
-              Machine Learning Engine
+              Smart Reliability Check
             </span>
             <span style={{ fontSize: '12px', color: '#64748b' }}>
-              Random Forest Ensemble • Scikit-Learn
+              Automated Accuracy Analysis
             </span>
           </div>
           <h2 style={{ margin: 0, fontSize: '20px', fontWeight: 700, color: '#0f172a' }}>
-            Forecast Reliability & Confidence Index
+            Wind Prediction Trust Score
           </h2>
           <p style={{ margin: '8px 0 0', fontSize: '13px', color: '#64748b', lineHeight: 1.5 }}>
-            Predicts the certainty level of Day-Ahead wind forecasts prior to market bidding.
-            Trained on historical forecast errors, diurnal settlement profiles, and grid ramp rates.
+            Shows how dependable tomorrow's wind estimate is for each time slot, helping you plan power trades with confidence.
           </p>
         </div>
 
@@ -127,13 +126,13 @@ export const ForecastConfidenceLab: React.FC<Props> = ({ gateClosureHour }) => {
         }}>
           <div>
             <div style={{ fontSize: '11px', color: '#64748b', fontWeight: 600, textTransform: 'uppercase' }}>
-              Average Reliability
+              Average Trust Score
             </div>
             <div style={{ fontSize: '32px', fontWeight: 800, color: scoreColor, lineHeight: 1.1 }}>
               {data.average_confidence_pct}%
             </div>
             <div style={{ fontSize: '12px', fontWeight: 600, color: scoreColor, marginTop: '2px' }}>
-              {data.overall_tier} Confidence Profile
+              {data.overall_tier} Dependability
             </div>
           </div>
         </div>
@@ -154,7 +153,7 @@ export const ForecastConfidenceLab: React.FC<Props> = ({ gateClosureHour }) => {
           boxShadow: '0 1px 3px rgba(0, 0, 0, 0.04)'
         }}>
           <div style={{ fontSize: '12px', fontWeight: 600, color: '#64748b', marginBottom: '12px' }}>
-            Confidence Tier Breakdown ({data.total_intervals} Intervals)
+            Score Summary ({data.total_intervals} Slots)
           </div>
           <div style={{ display: 'flex', gap: '10px' }}>
             <div style={{
@@ -168,7 +167,7 @@ export const ForecastConfidenceLab: React.FC<Props> = ({ gateClosureHour }) => {
               <div style={{ fontSize: '18px', fontWeight: 700, color: '#059669' }}>
                 {data.high_confidence_count}
               </div>
-              <div style={{ fontSize: '11px', color: '#047857', fontWeight: 600 }}>High (≥80%)</div>
+              <div style={{ fontSize: '11px', color: '#047857', fontWeight: 600 }}>High Trust (≥80%)</div>
             </div>
 
             <div style={{
@@ -182,7 +181,7 @@ export const ForecastConfidenceLab: React.FC<Props> = ({ gateClosureHour }) => {
               <div style={{ fontSize: '18px', fontWeight: 700, color: '#d97706' }}>
                 {data.medium_confidence_count}
               </div>
-              <div style={{ fontSize: '11px', color: '#b45309', fontWeight: 600 }}>Med (60-79%)</div>
+              <div style={{ fontSize: '11px', color: '#b45309', fontWeight: 600 }}>Medium (60-79%)</div>
             </div>
 
             <div style={{
@@ -210,7 +209,7 @@ export const ForecastConfidenceLab: React.FC<Props> = ({ gateClosureHour }) => {
           boxShadow: '0 1px 3px rgba(0, 0, 0, 0.04)'
         }}>
           <div style={{ fontSize: '12px', fontWeight: 600, color: '#64748b', marginBottom: '10px' }}>
-            Random Forest Feature Importances
+            What Influences This Score
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             {Object.entries(data.feature_importances).map(([feature, pct]) => (
@@ -245,7 +244,7 @@ export const ForecastConfidenceLab: React.FC<Props> = ({ gateClosureHour }) => {
         }}>
           <div>
             <div style={{ fontSize: '12px', fontWeight: 600, color: '#64748b', marginBottom: '8px' }}>
-              Trading Desk Recommendation
+              Buying Guidance
             </div>
             <p style={{ margin: 0, fontSize: '13px', color: '#0f172a', lineHeight: 1.5 }}>
               {data.summary_recommendation}
@@ -260,7 +259,7 @@ export const ForecastConfidenceLab: React.FC<Props> = ({ gateClosureHour }) => {
             fontSize: '11px',
             color: '#64748b'
           }}>
-            Lead time: <strong>{(24 - gateClosureHour) + 13}h to {(24 - gateClosureHour) + 36.5}h</strong> before physical delivery.
+            Planning window: <strong>{(24 - gateClosureHour) + 13}h to {(24 - gateClosureHour) + 36.5}h</strong> ahead of time.
           </div>
         </div>
       </div>
@@ -283,10 +282,10 @@ export const ForecastConfidenceLab: React.FC<Props> = ({ gateClosureHour }) => {
         }}>
           <div>
             <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 700, color: '#0f172a' }}>
-              Half-Hour Settlement Period Reliability Schedule
+              30-Minute Schedule & Reliability Scores
             </h3>
             <p style={{ margin: '4px 0 0', fontSize: '12px', color: '#64748b' }}>
-              Inspection of individual settlement periods with expected uncertainty and ML confidence ratings.
+              Detailed time slots showing predicted wind, expected variation range, and trustworthiness rating.
             </p>
           </div>
 
@@ -339,13 +338,13 @@ export const ForecastConfidenceLab: React.FC<Props> = ({ gateClosureHour }) => {
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
             <thead>
               <tr style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0', textAlign: 'left' }}>
-                <th style={{ padding: '10px 14px', color: '#475569', fontWeight: 600 }}>Period</th>
-                <th style={{ padding: '10px 14px', color: '#475569', fontWeight: 600 }}>Time Slot</th>
-                <th style={{ padding: '10px 14px', color: '#475569', fontWeight: 600 }}>Day-Ahead Forecast</th>
-                <th style={{ padding: '10px 14px', color: '#475569', fontWeight: 600 }}>Actual Outturn</th>
-                <th style={{ padding: '10px 14px', color: '#475569', fontWeight: 600 }}>Expected Uncertainty</th>
-                <th style={{ padding: '10px 14px', color: '#475569', fontWeight: 600 }}>Confidence Score</th>
-                <th style={{ padding: '10px 14px', color: '#475569', fontWeight: 600 }}>Reliability Rating</th>
+                <th style={{ padding: '10px 14px', color: '#475569', fontWeight: 600 }}>Slot</th>
+                <th style={{ padding: '10px 14px', color: '#475569', fontWeight: 600 }}>Time Window</th>
+                <th style={{ padding: '10px 14px', color: '#475569', fontWeight: 600 }}>Predicted Wind</th>
+                <th style={{ padding: '10px 14px', color: '#475569', fontWeight: 600 }}>Actual Wind Output</th>
+                <th style={{ padding: '10px 14px', color: '#475569', fontWeight: 600 }}>Possible Variation (±MW)</th>
+                <th style={{ padding: '10px 14px', color: '#475569', fontWeight: 600 }}>Trust Score</th>
+                <th style={{ padding: '10px 14px', color: '#475569', fontWeight: 600 }}>Reliability Level</th>
               </tr>
             </thead>
             <tbody>
@@ -368,7 +367,7 @@ export const ForecastConfidenceLab: React.FC<Props> = ({ gateClosureHour }) => {
                 return (
                   <tr key={item.startTime} style={{ borderBottom: '1px solid #f1f5f9' }}>
                     <td style={{ padding: '10px 14px', fontWeight: 600, color: '#0f172a' }}>
-                      SP {sp}
+                      Slot {sp}
                     </td>
                     <td style={{ padding: '10px 14px', color: '#64748b' }}>
                       {timeSlot}
@@ -407,3 +406,4 @@ export const ForecastConfidenceLab: React.FC<Props> = ({ gateClosureHour }) => {
     </div>
   );
 };
+

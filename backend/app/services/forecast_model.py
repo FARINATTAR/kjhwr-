@@ -97,21 +97,21 @@ class ForecastConfidenceModel:
             predicted_abs_errors = self.model.predict(np.array(X))
             raw_importances = self.model.feature_importances_
             feature_importances = {
-                "Forecast Generation Level": round(float(raw_importances[1]) * 100, 1),
-                "Diurnal Timing (Time of Day)": round(float(raw_importances[0]) * 100, 1),
-                "Gate Closure Lead Time": round(float(raw_importances[3]) * 100, 1),
-                "Peak Demand Window": round(float(raw_importances[4]) * 100, 1),
-                "Day of Week": round(float(raw_importances[2]) * 100, 1)
+                "Total Wind Volume Expected": round(float(raw_importances[1]) * 100, 1),
+                "Time of Day (Morning / Evening)": round(float(raw_importances[0]) * 100, 1),
+                "Hours Ahead of Delivery": round(float(raw_importances[3]) * 100, 1),
+                "High Electricity Demand Hours": round(float(raw_importances[4]) * 100, 1),
+                "Day of the Week": round(float(raw_importances[2]) * 100, 1)
             }
         else:
             # Fallback statistical confidence scoring if sklearn is loading
             predicted_abs_errors = [item["absErrorMW"] for item in paired_series]
             feature_importances = {
-                "Forecast Generation Level": 35.0,
-                "Diurnal Timing (Time of Day)": 28.0,
-                "Gate Closure Lead Time": 18.0,
-                "Peak Demand Window": 12.0,
-                "Day of Week": 7.0
+                "Total Wind Volume Expected": 35.0,
+                "Time of Day (Morning / Evening)": 28.0,
+                "Hours Ahead of Delivery": 18.0,
+                "High Electricity Demand Hours": 12.0,
+                "Day of the Week": 7.0
             }
 
         # Calculate confidence score for each interval:
@@ -165,7 +165,7 @@ class ForecastConfidenceModel:
             "medium_confidence_count": med_count,
             "low_confidence_count": low_count,
             "total_intervals": n,
-            "model_type": "RandomForestRegressor (Scikit-Learn)",
+            "model_type": "Automated Prediction Model",
             "feature_importances": feature_importances,
             "summary_recommendation": self._get_recommendation(avg_confidence, low_count, n),
             "data": scored_intervals
@@ -174,11 +174,12 @@ class ForecastConfidenceModel:
     def _get_recommendation(self, avg_score: float, low_count: int, total: int) -> str:
         low_pct = round((low_count / total * 100), 1) if total > 0 else 0.0
         if avg_score >= 80 and low_pct < 10:
-            return "High forecast stability. Standard Day-Ahead bidding strategy recommended without extra risk margin."
+            return "Predictions are highly dependable today. You can proceed with standard power purchasing without extra safety buffers."
         elif avg_score >= 65:
-            return f"Moderate uncertainty detected in {low_pct}% of intervals. Recommend applying P90 procurement buffers on peak periods."
+            return f"Moderate variation expected during peak hours ({low_pct}% of the day). Keep a small backup power reserve ready for the evening."
         else:
-            return "Elevated volatility predicted across multiple settlement periods. Recommend tightening intra-day hedging positions."
+            return "Higher than normal wind fluctuations expected today. Review trades closer to delivery time."
+
 
     def _empty_response(self) -> Dict:
         return {
