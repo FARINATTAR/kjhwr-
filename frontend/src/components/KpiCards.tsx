@@ -36,10 +36,10 @@ export const KpiCards: React.FC<KpiCardsProps> = ({ metrics, loading }) => {
           <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 500 }}>
             Actual Fleet Generation
           </span>
-          <Zap size={16} color="#10b981" />
+          <Zap size={16} color="#059669" />
         </div>
         <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
-          <span className="mono" style={{ fontSize: '1.6rem', fontWeight: 700, color: '#10b981' }}>
+          <span className="mono" style={{ fontSize: '1.6rem', fontWeight: 700, color: '#059669' }}>
             {metrics.mean_actual_mw.toLocaleString()}
           </span>
           <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>MW avg</span>
@@ -55,16 +55,16 @@ export const KpiCards: React.FC<KpiCardsProps> = ({ metrics, loading }) => {
           <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 500 }}>
             Average Forecast Error
           </span>
-          <TrendingUp size={16} color="#f59e0b" />
+          <TrendingUp size={16} color="#d97706" />
         </div>
         <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
-          <span className="mono" style={{ fontSize: '1.6rem', fontWeight: 700, color: '#f59e0b' }}>
+          <span className="mono" style={{ fontSize: '1.6rem', fontWeight: 700, color: '#d97706' }}>
             {metrics.mae_mw.toLocaleString()}
           </span>
           <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>MW</span>
         </div>
         <p style={{ fontSize: '0.75rem', color: 'var(--text-dim)', marginTop: '4px' }}>
-          Typical miss: <strong className="mono" style={{ color: '#f59e0b' }}>{metrics.nmae_pct}%</strong> of actual power
+          Typical miss: <strong className="mono" style={{ color: '#d97706' }}>{metrics.nmae_pct}%</strong> of actual power
         </p>
       </div>
 
@@ -74,10 +74,10 @@ export const KpiCards: React.FC<KpiCardsProps> = ({ metrics, loading }) => {
           <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 500 }}>
             Large Miss Penalty
           </span>
-          <Scale size={16} color="#38bdf8" />
+          <Scale size={16} color="#0284c7" />
         </div>
         <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
-          <span className="mono" style={{ fontSize: '1.6rem', fontWeight: 700, color: '#38bdf8' }}>
+          <span className="mono" style={{ fontSize: '1.6rem', fontWeight: 700, color: '#0284c7' }}>
             {metrics.rmse_mw.toLocaleString()}
           </span>
           <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>MW</span>
@@ -93,13 +93,13 @@ export const KpiCards: React.FC<KpiCardsProps> = ({ metrics, loading }) => {
           <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 500 }}>
             Prediction Tendency
           </span>
-          <AlertTriangle size={16} color={metrics.mean_bias_mw > 0 ? '#ef4444' : '#38bdf8'} />
+          <AlertTriangle size={16} color={metrics.mean_bias_mw > 0 ? '#dc2626' : '#0284c7'} />
         </div>
         <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
           <span className="mono" style={{
             fontSize: '1.6rem',
             fontWeight: 700,
-            color: metrics.mean_bias_mw > 0 ? '#f87171' : '#38bdf8'
+            color: metrics.mean_bias_mw > 0 ? '#dc2626' : '#0284c7'
           }}>
             {metrics.mean_bias_mw > 0 ? `+${metrics.mean_bias_mw}` : metrics.mean_bias_mw}
           </span>
@@ -113,15 +113,15 @@ export const KpiCards: React.FC<KpiCardsProps> = ({ metrics, loading }) => {
       </div>
 
       {/* 5. Recommended Thermal Procurement Buffer (P90) */}
-      <div className="card" style={{ borderColor: 'rgba(239, 68, 68, 0.4)', background: 'linear-gradient(180deg, #161a29 0%, #111827 100%)' }}>
+      <div className="card" style={{ borderColor: 'rgba(239, 68, 68, 0.25)', background: 'linear-gradient(180deg, #fef2f2 0%, #ffffff 100%)' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-          <span style={{ fontSize: '0.8rem', color: '#f87171', fontWeight: 600 }}>
+          <span style={{ fontSize: '0.8rem', color: '#b91c1c', fontWeight: 600 }}>
             Safety Reserve Needed
           </span>
-          <ShieldAlert size={16} color="#ef4444" />
+          <ShieldAlert size={16} color="#dc2626" />
         </div>
         <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
-          <span className="mono" style={{ fontSize: '1.6rem', fontWeight: 700, color: '#f87171' }}>
+          <span className="mono" style={{ fontSize: '1.6rem', fontWeight: 700, color: '#b91c1c' }}>
             {metrics.procurement_buffer.p90_buffer_mw.toLocaleString()}
           </span>
           <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>MW</span>

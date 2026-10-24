@@ -35,10 +35,11 @@ export const SettlementPeriodProfile: React.FC<SettlementPeriodProfileProps> = (
       const p = payload[0].payload;
       return (
         <div style={{
-          background: '#0f172a',
-          border: '1px solid rgba(255, 255, 255, 0.15)',
+          background: '#ffffff',
+          border: '1px solid #cbd5e1',
           borderRadius: '8px',
           padding: '12px 14px',
+          boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.08)',
           fontSize: '0.8rem',
           minWidth: '220px'
         }}>
@@ -47,16 +48,16 @@ export const SettlementPeriodProfile: React.FC<SettlementPeriodProfileProps> = (
             {p.isPeakPeriod && <span className="badge badge-warning">Peak Hours</span>}
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-            <span style={{ color: '#f59e0b' }}>Avg Forecast Miss:</span>
-            <strong className="mono">{p.maeMW.toLocaleString()} MW</strong>
+            <span style={{ color: '#d97706' }}>Avg Forecast Miss:</span>
+            <strong className="mono" style={{ color: '#0f172a' }}>{p.maeMW.toLocaleString()} MW</strong>
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-            <span style={{ color: '#10b981' }}>Avg Generation:</span>
-            <strong className="mono">{p.avgActualMW.toLocaleString()} MW</strong>
+            <span style={{ color: '#059669' }}>Avg Generation:</span>
+            <strong className="mono" style={{ color: '#0f172a' }}>{p.avgActualMW.toLocaleString()} MW</strong>
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between' }}>
             <span style={{ color: 'var(--text-muted)' }}>Prediction Lean:</span>
-            <strong className="mono" style={{ color: p.meanBiasMW > 0 ? '#ef4444' : '#38bdf8' }}>
+            <strong className="mono" style={{ color: p.meanBiasMW > 0 ? '#dc2626' : '#0284c7' }}>
               {p.meanBiasMW > 0 ? `+${p.meanBiasMW}` : p.meanBiasMW} MW
             </strong>
           </div>
@@ -88,7 +89,7 @@ export const SettlementPeriodProfile: React.FC<SettlementPeriodProfileProps> = (
       <div style={{ width: '100%', height: '280px' }}>
         <ResponsiveContainer width="100%" height="100%">
           <ComposedChart data={data} margin={{ top: 10, right: 10, left: 10, bottom: 0 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255, 255, 255, 0.05)" />
+            <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
             <XAxis
               dataKey="settlementPeriod"
               stroke="#64748b"
@@ -122,14 +123,14 @@ export const SettlementPeriodProfile: React.FC<SettlementPeriodProfileProps> = (
               x2={39}
               strokeOpacity={0.3}
               fill="#f59e0b"
-              fillOpacity={0.08}
+              fillOpacity={0.12}
             />
 
             <Bar
               yAxisId="left"
               dataKey="maeMW"
               name="Avg Forecast Miss (MW)"
-              fill="#f59e0b"
+              fill="#d97706"
               radius={[3, 3, 0, 0]}
               opacity={0.85}
             />
@@ -139,7 +140,7 @@ export const SettlementPeriodProfile: React.FC<SettlementPeriodProfileProps> = (
               type="monotone"
               dataKey="avgActualMW"
               name="Avg Actual Generation (MW)"
-              stroke="#10b981"
+              stroke="#059669"
               strokeWidth={2}
               dot={false}
             />

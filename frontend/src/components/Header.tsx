@@ -49,13 +49,13 @@ export const Header: React.FC<HeaderProps> = ({ onExportCSV }) => {
           alignItems: 'center',
           gap: '8px',
           padding: '6px 12px',
-          background: 'rgba(255, 255, 255, 0.03)',
+          background: '#f1f5f9',
           borderRadius: '8px',
           border: '1px solid var(--border-subtle)',
           fontSize: '0.8rem',
           color: 'var(--text-muted)'
         }}>
-          <Activity size={14} color="#10b981" />
+          <Activity size={14} color="#059669" />
           <span>Data Source: <strong>1,488 Records</strong></span>
         </div>
 

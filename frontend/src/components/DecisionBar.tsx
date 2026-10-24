@@ -53,8 +53,9 @@ export const DecisionBar: React.FC<DecisionBarProps> = ({
                 style={{
                   fontSize: '0.8rem',
                   padding: '6px 12px',
-                  borderColor: gateClosureHour === option.hour ? '#10b981' : 'var(--border-subtle)',
-                  background: gateClosureHour === option.hour ? 'rgba(16, 185, 129, 0.2)' : 'var(--bg-surface-elevated)'
+                  borderColor: gateClosureHour === option.hour ? '#059669' : '#cbd5e1',
+                  background: gateClosureHour === option.hour ? '#059669' : '#ffffff',
+                  color: gateClosureHour === option.hour ? '#ffffff' : '#334155'
                 }}
               >
                 {option.label}
@@ -81,9 +82,10 @@ export const DecisionBar: React.FC<DecisionBarProps> = ({
                   style={{
                     fontSize: '0.78rem',
                     padding: '5px 10px',
-                    borderColor: active ? '#38bdf8' : 'var(--border-subtle)',
-                    background: active ? 'rgba(56, 189, 248, 0.15)' : 'transparent',
-                    color: active ? '#38bdf8' : 'var(--text-muted)'
+                    borderColor: active ? '#0284c7' : '#cbd5e1',
+                    background: active ? '#f0f9ff' : '#ffffff',
+                    color: active ? '#0284c7' : '#64748b',
+                    fontWeight: active ? 600 : 500
                   }}
                 >
                   {p.label}
@@ -96,11 +98,12 @@ export const DecisionBar: React.FC<DecisionBarProps> = ({
             fontSize: '0.8rem',
             padding: '4px 10px',
             borderRadius: '6px',
-            background: 'rgba(255, 255, 255, 0.05)',
+            background: '#f1f5f9',
+            border: '1px solid #e2e8f0',
             color: 'var(--text-muted)',
             marginLeft: '8px'
           }}>
-            <span className="mono" style={{ color: '#10b981', fontWeight: 600 }}>{totalIntervals}</span> data points loaded
+            <span className="mono" style={{ color: '#059669', fontWeight: 600 }}>{totalIntervals}</span> data points loaded
           </div>
         </div>
       </div>

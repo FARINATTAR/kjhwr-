@@ -15,7 +15,7 @@ export const ProcurementInsight: React.FC<ProcurementInsightProps> = ({ metrics,
   return (
     <div className="card" style={{
       marginBottom: '24px',
-      background: 'linear-gradient(135deg, rgba(17, 24, 39, 0.9) 0%, rgba(15, 23, 42, 0.95) 100%)',
+      background: 'linear-gradient(135deg, #fffbeb 0%, #ffffff 100%)',
       border: '1px solid rgba(245, 158, 11, 0.3)'
     }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '14px' }}>
@@ -28,10 +28,10 @@ export const ProcurementInsight: React.FC<ProcurementInsightProps> = ({ metrics,
           alignItems: 'center',
           justifyContent: 'center'
         }}>
-          <Flame size={18} color="#f59e0b" />
+          <Flame size={18} color="#d97706" />
         </div>
         <div>
-          <h3 style={{ fontSize: '1rem', fontWeight: 600 }}>
+          <h3 style={{ fontSize: '1rem', fontWeight: 600, color: '#0f172a' }}>
             Commercial Dispatch & Backup Reserve Guidance
           </h3>
           <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
@@ -49,18 +49,19 @@ export const ProcurementInsight: React.FC<ProcurementInsightProps> = ({ metrics,
         <div style={{
           padding: '14px',
           borderRadius: '8px',
-          background: 'rgba(255, 255, 255, 0.03)',
-          border: '1px solid var(--border-subtle)'
+          background: '#ffffff',
+          border: '1px solid #e2e8f0',
+          boxShadow: '0 1px 2px rgba(0,0,0,0.04)'
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
-            <ShieldCheck size={16} color="#10b981" />
-            <strong style={{ fontSize: '0.85rem', color: '#10b981' }}>Recommended Backup Power</strong>
+            <ShieldCheck size={16} color="#059669" />
+            <strong style={{ fontSize: '0.85rem', color: '#059669' }}>Recommended Backup Power</strong>
           </div>
           <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', lineHeight: '1.45' }}>
             To be <strong style={{ color: 'var(--text-main)' }}>90% certain</strong> you won't get hit with emergency power penalty fees, hold ready:
           </p>
           <div style={{ marginTop: '8px', display: 'flex', alignItems: 'baseline', gap: '6px' }}>
-            <span className="mono" style={{ fontSize: '1.4rem', fontWeight: 700, color: '#f59e0b' }}>
+            <span className="mono" style={{ fontSize: '1.4rem', fontWeight: 700, color: '#d97706' }}>
               +{buf.p90_buffer_mw.toLocaleString()} MW
             </span>
             <span style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>(95% safety: +{buf.p95_buffer_mw.toLocaleString()} MW)</span>
@@ -71,18 +72,19 @@ export const ProcurementInsight: React.FC<ProcurementInsightProps> = ({ metrics,
         <div style={{
           padding: '14px',
           borderRadius: '8px',
-          background: 'rgba(255, 255, 255, 0.03)',
-          border: '1px solid var(--border-subtle)'
+          background: '#ffffff',
+          border: '1px solid #e2e8f0',
+          boxShadow: '0 1px 2px rgba(0,0,0,0.04)'
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
-            <AlertCircle size={16} color="#ef4444" />
-            <strong style={{ fontSize: '0.85rem', color: '#ef4444' }}>How Often Wind Under-Delivered</strong>
+            <AlertCircle size={16} color="#dc2626" />
+            <strong style={{ fontSize: '0.85rem', color: '#dc2626' }}>How Often Wind Under-Delivered</strong>
           </div>
           <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', lineHeight: '1.45' }}>
             In January 2026, wind generation fell short of the forecast in:
           </p>
           <div style={{ marginTop: '8px', display: 'flex', alignItems: 'baseline', gap: '8px' }}>
-            <span className="mono" style={{ fontSize: '1.4rem', fontWeight: 700, color: '#f87171' }}>
+            <span className="mono" style={{ fontSize: '1.4rem', fontWeight: 700, color: '#dc2626' }}>
               {buf.deficit_probability_pct}%
             </span>
             <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
@@ -95,12 +97,13 @@ export const ProcurementInsight: React.FC<ProcurementInsightProps> = ({ metrics,
         <div style={{
           padding: '14px',
           borderRadius: '8px',
-          background: 'rgba(255, 255, 255, 0.03)',
-          border: '1px solid var(--border-subtle)'
+          background: '#ffffff',
+          border: '1px solid #e2e8f0',
+          boxShadow: '0 1px 2px rgba(0,0,0,0.04)'
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
-            <ArrowUpRight size={16} color="#38bdf8" />
-            <strong style={{ fontSize: '0.85rem', color: '#38bdf8' }}>Expensive Peak Hours (16:30 – 19:30 GMT)</strong>
+            <ArrowUpRight size={16} color="#0284c7" />
+            <strong style={{ fontSize: '0.85rem', color: '#0284c7' }}>Expensive Peak Hours (16:30 – 19:30 GMT)</strong>
           </div>
           <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', lineHeight: '1.45' }}>
             Grid penalty rates spike hardest during dinner hours when demand is highest. Forecast conservatively during these hours to protect profit margins.

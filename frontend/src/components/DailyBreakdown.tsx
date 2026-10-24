@@ -30,18 +30,19 @@ export const DailyBreakdown: React.FC<DailyBreakdownProps> = ({ data, loading })
       const p = payload[0].payload;
       return (
         <div style={{
-          background: '#0f172a',
-          border: '1px solid rgba(255, 255, 255, 0.15)',
+          background: '#ffffff',
+          border: '1px solid #cbd5e1',
           borderRadius: '8px',
           padding: '10px 14px',
+          boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.08)',
           fontSize: '0.8rem'
         }}>
           <div style={{ fontWeight: 600, color: 'var(--text-main)', marginBottom: '4px' }}>
             {p.date}
           </div>
-          <div style={{ color: '#10b981' }}>Avg Generation: <strong className="mono">{p.avgActualMW.toLocaleString()} MW</strong></div>
-          <div style={{ color: '#f59e0b' }}>Forecast Miss: <strong className="mono">{p.maeMW.toLocaleString()} MW</strong></div>
-          <div style={{ color: p.meanBiasMW > 0 ? '#ef4444' : '#38bdf8' }}>
+          <div style={{ color: '#059669' }}>Avg Generation: <strong className="mono" style={{ color: '#0f172a' }}>{p.avgActualMW.toLocaleString()} MW</strong></div>
+          <div style={{ color: '#d97706' }}>Forecast Miss: <strong className="mono" style={{ color: '#0f172a' }}>{p.maeMW.toLocaleString()} MW</strong></div>
+          <div style={{ color: p.meanBiasMW > 0 ? '#dc2626' : '#0284c7' }}>
             Prediction Lean: <strong className="mono">{p.meanBiasMW > 0 ? `+${p.meanBiasMW}` : p.meanBiasMW} MW</strong>
           </div>
         </div>
@@ -64,7 +65,7 @@ export const DailyBreakdown: React.FC<DailyBreakdownProps> = ({ data, loading })
       <div style={{ width: '100%', height: '240px' }}>
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={data} margin={{ top: 10, right: 10, left: 10, bottom: 0 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255, 255, 255, 0.05)" />
+            <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
             <XAxis
               dataKey="day"
               stroke="#64748b"
@@ -80,7 +81,7 @@ export const DailyBreakdown: React.FC<DailyBreakdownProps> = ({ data, loading })
             />
             <Tooltip content={<CustomTooltip />} />
             <Legend wrapperStyle={{ fontSize: '0.8rem', paddingTop: '8px' }} />
-            <Bar dataKey="maeMW" name="Daily Forecast Miss (MW)" fill="#f59e0b" radius={[2, 2, 0, 0]} />
+            <Bar dataKey="maeMW" name="Daily Forecast Miss (MW)" fill="#d97706" radius={[2, 2, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>
       </div>
