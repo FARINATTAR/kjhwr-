@@ -57,7 +57,7 @@ export const TimeSeriesChart: React.FC<TimeSeriesChartProps> = ({
         }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '6px' }}>
             <span style={{ color: 'var(--text-main)', fontWeight: 600 }}>{p.displayTime} GMT</span>
-            <span className="badge badge-info">SP {p.settlementPeriod}</span>
+            <span className="badge badge-info">Slot {p.settlementPeriod}</span>
           </div>
 
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
@@ -66,13 +66,13 @@ export const TimeSeriesChart: React.FC<TimeSeriesChartProps> = ({
           </div>
 
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-            <span style={{ color: '#f59e0b' }}>● DA Forecast ({gateClosureHour}:00):</span>
+            <span style={{ color: '#f59e0b' }}>● Predicted Wind ({gateClosureHour}:00):</span>
             <strong className="mono">{p.dayAheadForecastMW.toLocaleString()} MW</strong>
           </div>
 
           {showIntraday && (
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-              <span style={{ color: '#8b5cf6' }}>● Intraday Forecast:</span>
+              <span style={{ color: '#8b5cf6' }}>● Updated Forecast:</span>
               <strong className="mono">{p.latestForecastMW.toLocaleString()} MW</strong>
             </div>
           )}
@@ -85,14 +85,14 @@ export const TimeSeriesChart: React.FC<TimeSeriesChartProps> = ({
             borderTop: '1px solid var(--border-subtle)'
           }}>
             <span style={{ color: p.errorMW > 0 ? '#ef4444' : '#38bdf8' }}>
-              Forecast Error:
+              Forecast Gap:
             </span>
             <strong className="mono" style={{ color: p.errorMW > 0 ? '#f87171' : '#38bdf8' }}>
               {p.errorMW > 0 ? `+${p.errorMW}` : p.errorMW} MW
             </strong>
           </div>
           <div style={{ fontSize: '0.7rem', color: 'var(--text-dim)', marginTop: '4px' }}>
-            Pub: {p.dayAheadPublishTime.replace('T', ' ').slice(0, 16)}
+            Published: {p.dayAheadPublishTime.replace('T', ' ').slice(0, 16)}
           </div>
         </div>
       );
@@ -112,10 +112,10 @@ export const TimeSeriesChart: React.FC<TimeSeriesChartProps> = ({
       }}>
         <div>
           <h2 style={{ fontSize: '1.1rem', fontWeight: 600 }}>
-            Actual Wind vs Day-Ahead Gate-Closure Forecast
+            Actual Wind vs Predicted Wind
           </h2>
           <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-            Comparing outturn out of Elexon FUELHH against WINDFOR available at D-1 ({gateClosureHour}:00 GMT)
+            Comparing real wind output against the day-ahead forecast locked in at {gateClosureHour}:00 GMT
           </p>
         </div>
 
@@ -129,7 +129,7 @@ export const TimeSeriesChart: React.FC<TimeSeriesChartProps> = ({
           }}
         >
           {showIntraday ? <Eye size={14} /> : <EyeOff size={14} />}
-          <span>{showIntraday ? 'Hide Intraday Run' : 'Compare Intraday Run'}</span>
+          <span>{showIntraday ? 'Hide Updated Forecast' : 'Compare Updated Forecast'}</span>
         </button>
       </div>
 
@@ -164,7 +164,7 @@ export const TimeSeriesChart: React.FC<TimeSeriesChartProps> = ({
             <Area
               type="monotone"
               dataKey="actualMW"
-              name="Actual Wind Outturn"
+              name="Actual Wind Output"
               stroke="#10b981"
               strokeWidth={2}
               fill="url(#actualGrad)"
@@ -173,7 +173,7 @@ export const TimeSeriesChart: React.FC<TimeSeriesChartProps> = ({
             <Line
               type="monotone"
               dataKey="dayAheadForecastMW"
-              name={`DA Forecast (D-1 ${gateClosureHour}:00)`}
+              name={`Predicted Wind (${gateClosureHour}:00 Day Before)`}
               stroke="#f59e0b"
               strokeWidth={2}
               strokeDasharray="4 4"
@@ -184,7 +184,7 @@ export const TimeSeriesChart: React.FC<TimeSeriesChartProps> = ({
               <Line
                 type="monotone"
                 dataKey="latestForecastMW"
-                name="Intraday Forecast (Latest D-0)"
+                name="Updated Forecast (Same Day)"
                 stroke="#8b5cf6"
                 strokeWidth={1.5}
                 strokeDasharray="2 2"
@@ -199,11 +199,11 @@ export const TimeSeriesChart: React.FC<TimeSeriesChartProps> = ({
       <div style={{ marginTop: '20px', paddingTop: '16px', borderTop: '1px solid var(--border-subtle)' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
           <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-muted)' }}>
-            Forecast Error Delta (MW) = Forecast - Actual
+            Forecast Gap (MW) = Predicted - Actual
           </span>
           <div style={{ display: 'flex', gap: '12px', fontSize: '0.75rem' }}>
-            <span style={{ color: '#ef4444' }}>■ Over-forecast (Deficit)</span>
-            <span style={{ color: '#38bdf8' }}>■ Under-forecast (Surplus)</span>
+            <span style={{ color: '#ef4444' }}>■ Over-predicted (Expected More)</span>
+            <span style={{ color: '#38bdf8' }}>■ Under-predicted (Expected Less)</span>
           </div>
         </div>
 
@@ -217,7 +217,7 @@ export const TimeSeriesChart: React.FC<TimeSeriesChartProps> = ({
               <Tooltip content={<CustomTooltip />} />
               <Bar
                 dataKey="errorMW"
-                name="Error MW"
+                name="Gap MW"
                 shape={(props: any) => {
                   const { x, y, width, height, value } = props;
                   const fill = value > 0 ? '#ef4444' : '#38bdf8';

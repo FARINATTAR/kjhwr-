@@ -25,7 +25,7 @@ export const SettlementPeriodProfile: React.FC<SettlementPeriodProfileProps> = (
   if (loading) {
     return (
       <div className="card" style={{ height: '320px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <p style={{ color: 'var(--text-muted)' }}>Loading settlement period profile...</p>
+        <p style={{ color: 'var(--text-muted)' }}>Loading time-of-day accuracy profile...</p>
       </div>
     );
   }
@@ -43,11 +43,11 @@ export const SettlementPeriodProfile: React.FC<SettlementPeriodProfileProps> = (
           minWidth: '220px'
         }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
-            <span style={{ fontWeight: 600, color: 'var(--text-main)' }}>Period {p.settlementPeriod} ({p.timeSlot})</span>
-            {p.isPeakPeriod && <span className="badge badge-warning">UK Peak</span>}
+            <span style={{ fontWeight: 600, color: 'var(--text-main)' }}>Time Slot {p.settlementPeriod} ({p.timeSlot})</span>
+            {p.isPeakPeriod && <span className="badge badge-warning">Peak Hours</span>}
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-            <span style={{ color: '#f59e0b' }}>MAE (Error):</span>
+            <span style={{ color: '#f59e0b' }}>Avg Forecast Miss:</span>
             <strong className="mono">{p.maeMW.toLocaleString()} MW</strong>
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
@@ -55,7 +55,7 @@ export const SettlementPeriodProfile: React.FC<SettlementPeriodProfileProps> = (
             <strong className="mono">{p.avgActualMW.toLocaleString()} MW</strong>
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-            <span style={{ color: 'var(--text-muted)' }}>Mean Bias:</span>
+            <span style={{ color: 'var(--text-muted)' }}>Prediction Lean:</span>
             <strong className="mono" style={{ color: p.meanBiasMW > 0 ? '#ef4444' : '#38bdf8' }}>
               {p.meanBiasMW > 0 ? `+${p.meanBiasMW}` : p.meanBiasMW} MW
             </strong>
@@ -71,16 +71,16 @@ export const SettlementPeriodProfile: React.FC<SettlementPeriodProfileProps> = (
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '8px' }}>
         <div>
           <h2 style={{ fontSize: '1.1rem', fontWeight: 600 }}>
-            Settlement Period Error Profile (SP 1 to 48)
+            Time-of-Day Accuracy Profile
           </h2>
           <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-            Average error across the 48 half-hour trading blocks in the UK day
+            How forecast accuracy varies across the 48 half-hour slots in a day
           </p>
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <span className="badge badge-warning">
-            Shaded: SP 33–39 (UK Peak 16:00–19:30 GMT)
+            Shaded: Peak Hours (16:00–19:30 GMT)
           </span>
         </div>
       </div>
@@ -94,7 +94,7 @@ export const SettlementPeriodProfile: React.FC<SettlementPeriodProfileProps> = (
               stroke="#64748b"
               fontSize={11}
               tickLine={false}
-              label={{ value: 'Settlement Period (1 - 48)', position: 'insideBottom', offset: -5, fill: '#64748b', fontSize: 11 }}
+              label={{ value: 'Half-Hour Slot (1 - 48)', position: 'insideBottom', offset: -5, fill: '#64748b', fontSize: 11 }}
             />
             <YAxis
               yAxisId="left"
@@ -128,7 +128,7 @@ export const SettlementPeriodProfile: React.FC<SettlementPeriodProfileProps> = (
             <Bar
               yAxisId="left"
               dataKey="maeMW"
-              name="Mean Absolute Error (MW)"
+              name="Avg Forecast Miss (MW)"
               fill="#f59e0b"
               radius={[3, 3, 0, 0]}
               opacity={0.85}
@@ -138,7 +138,7 @@ export const SettlementPeriodProfile: React.FC<SettlementPeriodProfileProps> = (
               yAxisId="right"
               type="monotone"
               dataKey="avgActualMW"
-              name="Avg Outturn (MW)"
+              name="Avg Actual Generation (MW)"
               stroke="#10b981"
               strokeWidth={2}
               dot={false}

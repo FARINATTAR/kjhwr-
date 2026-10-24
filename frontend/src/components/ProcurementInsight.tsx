@@ -32,10 +32,10 @@ export const ProcurementInsight: React.FC<ProcurementInsightProps> = ({ metrics,
         </div>
         <div>
           <h3 style={{ fontSize: '1rem', fontWeight: 600 }}>
-            Procurement Decision Engine & Balancing Risk Recommendation
+            Commercial Dispatch & Backup Reserve Guidance
           </h3>
           <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
-            Quantified hedging strategy for UK wholesale Day-Ahead auction at {gateClosureHour}:00 GMT
+            Plain-English power hedging advice for Day-Ahead trading decisions at {gateClosureHour}:00 GMT
           </p>
         </div>
       </div>
@@ -54,16 +54,16 @@ export const ProcurementInsight: React.FC<ProcurementInsightProps> = ({ metrics,
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
             <ShieldCheck size={16} color="#10b981" />
-            <strong style={{ fontSize: '0.85rem', color: '#10b981' }}>Recommended Thermal Reserve</strong>
+            <strong style={{ fontSize: '0.85rem', color: '#10b981' }}>Recommended Backup Power</strong>
           </div>
           <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', lineHeight: '1.45' }}>
-            To achieve <strong style={{ color: 'var(--text-main)' }}>90% confidence</strong> against wind under-generation penalties, contract a flexible thermal buffer of:
+            To be <strong style={{ color: 'var(--text-main)' }}>90% certain</strong> you won't get hit with emergency power penalty fees, hold ready:
           </p>
           <div style={{ marginTop: '8px', display: 'flex', alignItems: 'baseline', gap: '6px' }}>
             <span className="mono" style={{ fontSize: '1.4rem', fontWeight: 700, color: '#f59e0b' }}>
               +{buf.p90_buffer_mw.toLocaleString()} MW
             </span>
-            <span style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>(P95: +{buf.p95_buffer_mw.toLocaleString()} MW)</span>
+            <span style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>(95% safety: +{buf.p95_buffer_mw.toLocaleString()} MW)</span>
           </div>
         </div>
 
@@ -76,17 +76,17 @@ export const ProcurementInsight: React.FC<ProcurementInsightProps> = ({ metrics,
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
             <AlertCircle size={16} color="#ef4444" />
-            <strong style={{ fontSize: '0.85rem', color: '#ef4444' }}>Deficit Exposure Frequency</strong>
+            <strong style={{ fontSize: '0.85rem', color: '#ef4444' }}>How Often Wind Under-Delivered</strong>
           </div>
           <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', lineHeight: '1.45' }}>
-            In January 2026, wind was lower than Day-Ahead forecast across:
+            In January 2026, wind generation fell short of the forecast in:
           </p>
           <div style={{ marginTop: '8px', display: 'flex', alignItems: 'baseline', gap: '8px' }}>
             <span className="mono" style={{ fontSize: '1.4rem', fontWeight: 700, color: '#f87171' }}>
               {buf.deficit_probability_pct}%
             </span>
             <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-              ({buf.deficit_intervals} of {buf.total_intervals} settlement periods)
+              of all half-hour time slots ({buf.deficit_intervals} of {buf.total_intervals})
             </span>
           </div>
         </div>
@@ -100,10 +100,10 @@ export const ProcurementInsight: React.FC<ProcurementInsightProps> = ({ metrics,
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
             <ArrowUpRight size={16} color="#38bdf8" />
-            <strong style={{ fontSize: '0.85rem', color: '#38bdf8' }}>Evening Peak Protocol (SP 33–39)</strong>
+            <strong style={{ fontSize: '0.85rem', color: '#38bdf8' }}>Expensive Peak Hours (16:30 – 19:30 GMT)</strong>
           </div>
           <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', lineHeight: '1.45' }}>
-            UK System Buy Price (SBP) spikes heavily between 16:30 and 19:30. Apply dynamic derating on wind forecasts during peak periods to avoid peak cash-out penalties.
+            Grid penalty rates spike hardest during dinner hours when demand is highest. Forecast conservatively during these hours to protect profit margins.
           </p>
         </div>
       </div>

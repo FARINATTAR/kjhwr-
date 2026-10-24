@@ -37,14 +37,14 @@ export const DecisionBar: React.FC<DecisionBarProps> = ({
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--text-muted)', fontSize: '0.85rem' }}>
             <Clock size={16} color="#f59e0b" />
-            <span style={{ fontWeight: 600, color: 'var(--text-main)' }}>DA Gate Closure (D-1):</span>
+            <span style={{ fontWeight: 600, color: 'var(--text-main)' }}>Forecast Deadline (Day Before):</span>
           </div>
 
           <div style={{ display: 'flex', gap: '6px' }}>
             {[
-              { hour: 9, label: '09:00 GMT (Early)' },
-              { hour: 11, label: '11:00 GMT (Auction Gate)' },
-              { hour: 17, label: '17:00 GMT (Post-Auction)' }
+              { hour: 9, label: '09:00 GMT (Morning)' },
+              { hour: 11, label: '11:00 GMT (Midday)' },
+              { hour: 17, label: '17:00 GMT (Evening)' }
             ].map((option) => (
               <button
                 key={option.hour}
@@ -100,7 +100,7 @@ export const DecisionBar: React.FC<DecisionBarProps> = ({
             color: 'var(--text-muted)',
             marginLeft: '8px'
           }}>
-            <span className="mono" style={{ color: '#10b981', fontWeight: 600 }}>{totalIntervals}</span> intervals loaded
+            <span className="mono" style={{ color: '#10b981', fontWeight: 600 }}>{totalIntervals}</span> data points loaded
           </div>
         </div>
       </div>

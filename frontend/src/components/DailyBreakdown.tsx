@@ -40,9 +40,9 @@ export const DailyBreakdown: React.FC<DailyBreakdownProps> = ({ data, loading })
             {p.date}
           </div>
           <div style={{ color: '#10b981' }}>Avg Generation: <strong className="mono">{p.avgActualMW.toLocaleString()} MW</strong></div>
-          <div style={{ color: '#f59e0b' }}>MAE: <strong className="mono">{p.maeMW.toLocaleString()} MW</strong></div>
+          <div style={{ color: '#f59e0b' }}>Forecast Miss: <strong className="mono">{p.maeMW.toLocaleString()} MW</strong></div>
           <div style={{ color: p.meanBiasMW > 0 ? '#ef4444' : '#38bdf8' }}>
-            Bias: <strong className="mono">{p.meanBiasMW > 0 ? `+${p.meanBiasMW}` : p.meanBiasMW} MW</strong>
+            Prediction Lean: <strong className="mono">{p.meanBiasMW > 0 ? `+${p.meanBiasMW}` : p.meanBiasMW} MW</strong>
           </div>
         </div>
       );
@@ -57,7 +57,7 @@ export const DailyBreakdown: React.FC<DailyBreakdownProps> = ({ data, loading })
           Daily Forecast Accuracy Trend (January 1 – 31, 2026)
         </h2>
         <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-          Day-by-day Mean Absolute Error vs Average Daily Generation
+          Day-by-day forecast miss compared to average daily output
         </p>
       </div>
 
@@ -80,7 +80,7 @@ export const DailyBreakdown: React.FC<DailyBreakdownProps> = ({ data, loading })
             />
             <Tooltip content={<CustomTooltip />} />
             <Legend wrapperStyle={{ fontSize: '0.8rem', paddingTop: '8px' }} />
-            <Bar dataKey="maeMW" name="Daily MAE (MW)" fill="#f59e0b" radius={[2, 2, 0, 0]} />
+            <Bar dataKey="maeMW" name="Daily Forecast Miss (MW)" fill="#f59e0b" radius={[2, 2, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>
       </div>

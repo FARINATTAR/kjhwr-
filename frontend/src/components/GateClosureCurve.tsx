@@ -38,9 +38,9 @@ export const GateClosureCurve: React.FC = () => {
   }, []);
 
   const chartData = data.map((d) => ({
-    name: d.closureHour === 24 ? 'Intraday (1h)' : `D-1 ${String(d.closureHour).padStart(2, '0')}:00`,
-    'MAE (MW)': d.maeMW,
-    'RMSE (MW)': d.rmseMW,
+    name: d.closureHour === 24 ? 'Intraday (1h before)' : `D-1 ${String(d.closureHour).padStart(2, '0')}:00`,
+    'Average Error (MW)': d.maeMW,
+    'Large Miss Volatility (MW)': d.rmseMW,
     'Cost (£k)': Math.round(d.imbalanceCostGBP / 1000),
     description: d.description
   }));
@@ -63,7 +63,7 @@ export const GateClosureCurve: React.FC = () => {
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 600, color: '#f8fafc' }}>
-              Gate Closure Sensitivity: The "Value of Time" Curve
+              Decision Timing: Accuracy Gains Closer to Delivery
             </h3>
             <span style={{
               background: 'rgba(139, 92, 246, 0.15)',
@@ -75,12 +75,12 @@ export const GateClosureCurve: React.FC = () => {
               fontWeight: 600,
               letterSpacing: '0.5px'
             }}>
-              MARKET DYNAMICS
+              TIMING ADVANTAGE
             </span>
           </div>
           <p style={{ margin: '6px 0 0', fontSize: '13px', color: '#94a3b8', maxWidth: '750px' }}>
-            Quantifies the operational and financial trade-off of market timing. Demonstrates how forecast uncertainty
-            shrinks as lead time decays from early morning D-1 to continuous intraday trading.
+            Shows how forecast accuracy improves as delivery gets closer. Locking contracts at 11:00 AM Day-Ahead secures volume,
+            but trading intraday provides fresher weather information and cuts penalty risks.
           </p>
         </div>
 
@@ -94,13 +94,13 @@ export const GateClosureCurve: React.FC = () => {
             textAlign: 'right'
           }}>
             <div style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.6px', color: '#c084fc', fontWeight: 600 }}>
-              Intraday Refinement Alpha
+              Intraday Trading Value
             </div>
             <div style={{ fontSize: '18px', fontWeight: 700, color: '#f3e8ff', marginTop: '2px', fontFamily: 'monospace' }}>
-              +{maeDelta} MW Accuracy / £{costDelta}k Risk Reduction
+              +{maeDelta} MW Accuracy / £{costDelta}k Risk Saved
             </div>
             <div style={{ fontSize: '11px', color: '#94a3b8', marginTop: '2px' }}>
-              from DA 11:00 → Intraday continuous
+              By trading closer to delivery
             </div>
           </div>
         )}
@@ -133,8 +133,8 @@ export const GateClosureCurve: React.FC = () => {
                   }}
                 />
                 <Legend wrapperStyle={{ fontSize: '11px', paddingTop: '8px' }} />
-                <Bar dataKey="MAE (MW)" fill="#8b5cf6" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="RMSE (MW)" fill="#ec4899" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="Average Error (MW)" fill="#8b5cf6" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="Large Miss Volatility (MW)" fill="#ec4899" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>

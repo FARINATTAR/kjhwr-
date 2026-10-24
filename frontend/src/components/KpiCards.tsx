@@ -34,7 +34,7 @@ export const KpiCards: React.FC<KpiCardsProps> = ({ metrics, loading }) => {
       <div className="card">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
           <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 500 }}>
-            Mean Wind Outturn
+            Actual Fleet Generation
           </span>
           <Zap size={16} color="#10b981" />
         </div>
@@ -42,10 +42,10 @@ export const KpiCards: React.FC<KpiCardsProps> = ({ metrics, loading }) => {
           <span className="mono" style={{ fontSize: '1.6rem', fontWeight: 700, color: '#10b981' }}>
             {metrics.mean_actual_mw.toLocaleString()}
           </span>
-          <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>MW</span>
+          <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>MW avg</span>
         </div>
         <p style={{ fontSize: '0.75rem', color: 'var(--text-dim)', marginTop: '4px' }}>
-          Total energy: <strong className="mono" style={{ color: 'var(--text-main)' }}>{totalGWh.toLocaleString()} GWh</strong>
+          Total power delivered: <strong className="mono" style={{ color: 'var(--text-main)' }}>{totalGWh.toLocaleString()} GWh</strong>
         </p>
       </div>
 
@@ -53,7 +53,7 @@ export const KpiCards: React.FC<KpiCardsProps> = ({ metrics, loading }) => {
       <div className="card">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
           <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 500 }}>
-            Mean Absolute Error (MAE)
+            Average Forecast Error
           </span>
           <TrendingUp size={16} color="#f59e0b" />
         </div>
@@ -64,7 +64,7 @@ export const KpiCards: React.FC<KpiCardsProps> = ({ metrics, loading }) => {
           <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>MW</span>
         </div>
         <p style={{ fontSize: '0.75rem', color: 'var(--text-dim)', marginTop: '4px' }}>
-          Normalized: <strong className="mono" style={{ color: '#f59e0b' }}>{metrics.nmae_pct}%</strong> of fleet outturn
+          Typical miss: <strong className="mono" style={{ color: '#f59e0b' }}>{metrics.nmae_pct}%</strong> of actual power
         </p>
       </div>
 
@@ -72,7 +72,7 @@ export const KpiCards: React.FC<KpiCardsProps> = ({ metrics, loading }) => {
       <div className="card">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
           <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 500 }}>
-            Root Mean Square (RMSE)
+            Large Miss Penalty
           </span>
           <Scale size={16} color="#38bdf8" />
         </div>
@@ -83,7 +83,7 @@ export const KpiCards: React.FC<KpiCardsProps> = ({ metrics, loading }) => {
           <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>MW</span>
         </div>
         <p style={{ fontSize: '0.75rem', color: 'var(--text-dim)', marginTop: '4px' }}>
-          Penalizes volatile ramp swings
+          Higher values signal sudden big misses
         </p>
       </div>
 
@@ -91,7 +91,7 @@ export const KpiCards: React.FC<KpiCardsProps> = ({ metrics, loading }) => {
       <div className="card">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
           <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 500 }}>
-            Forecast Bias (MBE)
+            Prediction Tendency
           </span>
           <AlertTriangle size={16} color={metrics.mean_bias_mw > 0 ? '#ef4444' : '#38bdf8'} />
         </div>
@@ -107,7 +107,7 @@ export const KpiCards: React.FC<KpiCardsProps> = ({ metrics, loading }) => {
         </div>
         <p style={{ fontSize: '0.75rem', marginTop: '4px' }}>
           <span className={`badge ${metrics.mean_bias_mw > 0 ? 'badge-danger' : 'badge-info'}`}>
-            {metrics.mean_bias_mw > 0 ? 'Net Over-forecast (Deficit Risk)' : 'Net Under-forecast (Spill Risk)'}
+            {metrics.mean_bias_mw > 0 ? 'Model over-predicts (Shortfall risk)' : 'Model under-predicts (Surplus spill)'}
           </span>
         </p>
       </div>
@@ -116,7 +116,7 @@ export const KpiCards: React.FC<KpiCardsProps> = ({ metrics, loading }) => {
       <div className="card" style={{ borderColor: 'rgba(239, 68, 68, 0.4)', background: 'linear-gradient(180deg, #161a29 0%, #111827 100%)' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
           <span style={{ fontSize: '0.8rem', color: '#f87171', fontWeight: 600 }}>
-            P90 Thermal Buffer
+            Safety Reserve Needed
           </span>
           <ShieldAlert size={16} color="#ef4444" />
         </div>
@@ -127,7 +127,7 @@ export const KpiCards: React.FC<KpiCardsProps> = ({ metrics, loading }) => {
           <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>MW</span>
         </div>
         <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '4px' }}>
-          Recommended thermal reserve margin
+          Covers 90% of wind shortfall drops
         </p>
       </div>
     </div>

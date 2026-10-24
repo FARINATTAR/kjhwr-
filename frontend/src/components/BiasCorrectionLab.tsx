@@ -66,7 +66,7 @@ export const BiasCorrectionLab: React.FC<Props> = ({ gateClosureHour }) => {
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 600, color: '#f8fafc' }}>
-              Statistical Bias-Correction Engine
+              Smart Forecast Tuning (Error Auto-Correction)
             </h3>
             <span style={{
               background: 'rgba(16, 185, 129, 0.15)',
@@ -78,18 +78,18 @@ export const BiasCorrectionLab: React.FC<Props> = ({ gateClosureHour }) => {
               fontWeight: 600,
               letterSpacing: '0.5px'
             }}>
-              ANALYTICAL ALPHA
+              ACCURACY BOOST
             </span>
           </div>
           <p style={{ margin: '6px 0 0', fontSize: '13px', color: '#94a3b8', maxWidth: '750px' }}>
-            Demonstrates the value-add of an adaptive debiasing layer on top of raw Elexon forecasts. A trailing-window rolling bias correction
-            removes systematic over-forecasting errors before placing Day-Ahead bids.
+            Standard weather forecasts consistently predict too much or too little wind. Our smart tuning engine learns from recent days
+            and automatically adjusts the numbers before you commit to trading positions.
           </p>
         </div>
 
         {/* Window Selector */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <span style={{ fontSize: '12px', color: '#94a3b8' }}>Calibration Window:</span>
+          <span style={{ fontSize: '12px', color: '#94a3b8' }}>Learning Memory:</span>
           {[3, 7, 14].map((days) => (
             <button
               key={days}
@@ -106,7 +106,7 @@ export const BiasCorrectionLab: React.FC<Props> = ({ gateClosureHour }) => {
                 transition: 'all 0.2s ease'
               }}
             >
-              {days} Days
+              Past {days} Days
             </button>
           ))}
         </div>
@@ -120,7 +120,7 @@ export const BiasCorrectionLab: React.FC<Props> = ({ gateClosureHour }) => {
           gap: '14px',
           marginBottom: '20px'
         }}>
-          {/* MAE Improvement */}
+          {/* Error Reduction */}
           <div style={{
             background: 'rgba(16, 185, 129, 0.08)',
             border: '1px solid rgba(16, 185, 129, 0.2)',
@@ -128,17 +128,17 @@ export const BiasCorrectionLab: React.FC<Props> = ({ gateClosureHour }) => {
             padding: '14px'
           }}>
             <div style={{ fontSize: '11px', color: '#34d399', textTransform: 'uppercase', fontWeight: 600 }}>
-              MAE Improvement
+              Forecast Error Reduction
             </div>
             <div style={{ fontSize: '24px', fontWeight: 700, color: '#6ee7b7', marginTop: '4px', fontFamily: 'monospace' }}>
-              {data.summary.mae_improvement_pct > 0 ? `-${data.summary.mae_improvement_pct}%` : `${data.summary.mae_improvement_pct}%`}
+              {data.summary.mae_improvement_pct > 0 ? `+${data.summary.mae_improvement_pct}%` : `${data.summary.mae_improvement_pct}%`}
             </div>
             <div style={{ fontSize: '11px', color: '#94a3b8', marginTop: '4px' }}>
-              {data.summary.raw_mae_mw} MW → {data.summary.corrected_mae_mw} MW
+              Error dropped from {data.summary.raw_mae_mw} MW to {data.summary.corrected_mae_mw} MW
             </div>
           </div>
 
-          {/* Bias Reduction */}
+          {/* Over-Prediction Eliminated */}
           <div style={{
             background: 'rgba(56, 189, 248, 0.08)',
             border: '1px solid rgba(56, 189, 248, 0.2)',
@@ -146,13 +146,13 @@ export const BiasCorrectionLab: React.FC<Props> = ({ gateClosureHour }) => {
             padding: '14px'
           }}>
             <div style={{ fontSize: '11px', color: '#38bdf8', textTransform: 'uppercase', fontWeight: 600 }}>
-              Systematic Bias Reduction
+              Over-Prediction Cut
             </div>
             <div style={{ fontSize: '24px', fontWeight: 700, color: '#7dd3fc', marginTop: '4px', fontFamily: 'monospace' }}>
               {data.summary.bias_reduction_pct.toFixed(1)}%
             </div>
             <div style={{ fontSize: '11px', color: '#94a3b8', marginTop: '4px' }}>
-              {data.summary.raw_mean_bias_mw} MW → {data.summary.corrected_mean_bias_mw} MW
+              Systematic bias: {data.summary.raw_mean_bias_mw} MW down to {data.summary.corrected_mean_bias_mw} MW
             </div>
           </div>
 
@@ -164,13 +164,13 @@ export const BiasCorrectionLab: React.FC<Props> = ({ gateClosureHour }) => {
             padding: '14px'
           }}>
             <div style={{ fontSize: '11px', color: '#f87171', textTransform: 'uppercase', fontWeight: 600 }}>
-              Raw Elexon Baseline MAE
+              Standard Market Miss (Avg)
             </div>
             <div style={{ fontSize: '24px', fontWeight: 700, color: '#fca5a5', marginTop: '4px', fontFamily: 'monospace' }}>
               {data.summary.raw_mae_mw} MW
             </div>
             <div style={{ fontSize: '11px', color: '#94a3b8', marginTop: '4px' }}>
-              Uncorrected Day-Ahead Forecast
+              Standard unadjusted weather forecast
             </div>
           </div>
 
@@ -182,17 +182,18 @@ export const BiasCorrectionLab: React.FC<Props> = ({ gateClosureHour }) => {
             padding: '14px'
           }}>
             <div style={{ fontSize: '11px', color: '#c084fc', textTransform: 'uppercase', fontWeight: 600 }}>
-              Corrected Model MAE
+              Tuned Model Miss (Avg)
             </div>
             <div style={{ fontSize: '24px', fontWeight: 700, color: '#d8b4fe', marginTop: '4px', fontFamily: 'monospace' }}>
               {data.summary.corrected_mae_mw} MW
             </div>
             <div style={{ fontSize: '11px', color: '#94a3b8', marginTop: '4px' }}>
-              With {windowDays}d rolling debiasing
+              After learning from past {windowDays} days
             </div>
           </div>
         </div>
       )}
+
 
       {/* Visual Chart Comparison */}
       <div style={{

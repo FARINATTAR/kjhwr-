@@ -38,7 +38,7 @@ export const Header: React.FC<HeaderProps> = ({ onExportCSV }) => {
             </span>
           </div>
           <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-            UK Day-Ahead Wholesale Power Market | Elexon BMRS FUELHH & WINDFOR Analytics | January 2026
+            UK Day-Ahead Wholesale Power Market | National Grid Wind Data Analytics | January 2026
           </p>
         </div>
       </div>
@@ -56,7 +56,7 @@ export const Header: React.FC<HeaderProps> = ({ onExportCSV }) => {
           color: 'var(--text-muted)'
         }}>
           <Activity size={14} color="#10b981" />
-          <span>Elexon Sync: <strong>1,488 Intervals</strong></span>
+          <span>Data Source: <strong>1,488 Records</strong></span>
         </div>
 
         <button className="btn btn-primary" onClick={onExportCSV} title="Export January 2026 Paired Dataset">

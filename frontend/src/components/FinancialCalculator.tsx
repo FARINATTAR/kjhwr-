@@ -56,7 +56,7 @@ export const FinancialCalculator: React.FC<Props> = ({ gateClosureHour }) => {
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 600, color: '#f8fafc' }}>
-              Financial Impact & Imbalance Exposure Calculator
+              Financial Penalty & Risk Calculator
             </h3>
             <span style={{
               background: 'rgba(245, 158, 11, 0.15)',
@@ -68,12 +68,12 @@ export const FinancialCalculator: React.FC<Props> = ({ gateClosureHour }) => {
               fontWeight: 600,
               letterSpacing: '0.5px'
             }}>
-              P&L RISK
+              ESTIMATED LOSSES
             </span>
           </div>
           <p style={{ margin: '6px 0 0', fontSize: '13px', color: '#94a3b8', maxWidth: '750px' }}>
-            Translates abstract MW deviations into real UK balancing cash-out penalty exposure (Elexon BSC Section T).
-            When over-forecasted, you pay SBP cash-out premium; when under-forecasted, surplus energy is dumped at discount SSP.
+            Translates forecast misses into real money. If wind produces less than expected, you pay high penalty rates for emergency grid power.
+            If wind produces more than expected, excess power is sold at a steep discount.
           </p>
         </div>
 
@@ -87,13 +87,13 @@ export const FinancialCalculator: React.FC<Props> = ({ gateClosureHour }) => {
           minWidth: '180px'
         }}>
           <div style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.8px', color: '#f87171', fontWeight: 600 }}>
-            Estimated Imbalance Cost
+            Estimated Imbalance Loss
           </div>
           <div style={{ fontSize: '26px', fontWeight: 700, color: '#fecaca', marginTop: '2px', fontFamily: 'monospace' }}>
             {loading ? '...' : (data ? formatGBP(data.total_imbalance_cost_gbp) : '£0')}
           </div>
           <div style={{ fontSize: '11px', color: '#94a3b8', marginTop: '2px' }}>
-            Jan 2026 total portfolio loss
+            Total January 2026 penalty exposure
           </div>
         </div>
       </div>
@@ -112,7 +112,7 @@ export const FinancialCalculator: React.FC<Props> = ({ gateClosureHour }) => {
         {/* SBP Slider */}
         <div>
           <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginBottom: '6px' }}>
-            <span style={{ color: '#cbd5e1' }}>System Buy Price (SBP)</span>
+            <span style={{ color: '#cbd5e1' }}>Emergency Power Penalty (SBP)</span>
             <span style={{ color: '#f87171', fontWeight: 700, fontFamily: 'monospace' }}>£{sbp}/MWh</span>
           </div>
           <input
@@ -124,13 +124,13 @@ export const FinancialCalculator: React.FC<Props> = ({ gateClosureHour }) => {
             onChange={(e) => setSbp(Number(e.target.value))}
             style={{ width: '100%', accentColor: '#ef4444', cursor: 'pointer' }}
           />
-          <div style={{ fontSize: '10px', color: '#64748b', marginTop: '2px' }}>Cash-out penalty when short (Over-forecast)</div>
+          <div style={{ fontSize: '10px', color: '#64748b', marginTop: '2px' }}>Rate paid when wind under-produces</div>
         </div>
 
         {/* Day-Ahead Auction Price */}
         <div>
           <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginBottom: '6px' }}>
-            <span style={{ color: '#cbd5e1' }}>Day-Ahead Auction Price</span>
+            <span style={{ color: '#cbd5e1' }}>Day-Ahead Wholesale Price</span>
             <span style={{ color: '#38bdf8', fontWeight: 700, fontFamily: 'monospace' }}>£{daPrice}/MWh</span>
           </div>
           <input
@@ -142,13 +142,13 @@ export const FinancialCalculator: React.FC<Props> = ({ gateClosureHour }) => {
             onChange={(e) => setDaPrice(Number(e.target.value))}
             style={{ width: '100%', accentColor: '#38bdf8', cursor: 'pointer' }}
           />
-          <div style={{ fontSize: '10px', color: '#64748b', marginTop: '2px' }}>Day-ahead reference clearing benchmark</div>
+          <div style={{ fontSize: '10px', color: '#64748b', marginTop: '2px' }}>Standard wholesale auction clearing rate</div>
         </div>
 
         {/* SSP Slider */}
         <div>
           <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginBottom: '6px' }}>
-            <span style={{ color: '#cbd5e1' }}>System Sell Price (SSP)</span>
+            <span style={{ color: '#cbd5e1' }}>Surplus Power Rate (SSP)</span>
             <span style={{ color: '#fbbf24', fontWeight: 700, fontFamily: 'monospace' }}>£{ssp}/MWh</span>
           </div>
           <input
@@ -160,7 +160,7 @@ export const FinancialCalculator: React.FC<Props> = ({ gateClosureHour }) => {
             onChange={(e) => setSsp(Number(e.target.value))}
             style={{ width: '100%', accentColor: '#fbbf24', cursor: 'pointer' }}
           />
-          <div style={{ fontSize: '10px', color: '#64748b', marginTop: '2px' }}>Discounted rate received when long (Under-forecast)</div>
+          <div style={{ fontSize: '10px', color: '#64748b', marginTop: '2px' }}>Discounted rate received when wind over-produces</div>
         </div>
       </div>
 
@@ -179,13 +179,13 @@ export const FinancialCalculator: React.FC<Props> = ({ gateClosureHour }) => {
             padding: '14px'
           }}>
             <div style={{ fontSize: '11px', color: '#f87171', textTransform: 'uppercase', fontWeight: 600 }}>
-              Over-Forecast Penalty
+              Under-Production Penalty
             </div>
             <div style={{ fontSize: '20px', fontWeight: 700, color: '#fecaca', marginTop: '4px', fontFamily: 'monospace' }}>
               {formatGBP(data.deficit_cost_gbp)}
             </div>
             <div style={{ fontSize: '11px', color: '#94a3b8', marginTop: '4px' }}>
-              {data.deficit_energy_mwh.toLocaleString()} MWh shortfall ({data.deficit_intervals} intervals)
+              {data.deficit_energy_mwh.toLocaleString()} MWh shortfall ({data.deficit_intervals} time slots)
             </div>
           </div>
 
@@ -197,13 +197,13 @@ export const FinancialCalculator: React.FC<Props> = ({ gateClosureHour }) => {
             padding: '14px'
           }}>
             <div style={{ fontSize: '11px', color: '#fbbf24', textTransform: 'uppercase', fontWeight: 600 }}>
-              Under-Forecast Discount
+              Over-Production Discount Loss
             </div>
             <div style={{ fontSize: '20px', fontWeight: 700, color: '#fef3c7', marginTop: '4px', fontFamily: 'monospace' }}>
               {formatGBP(data.surplus_cost_gbp)}
             </div>
             <div style={{ fontSize: '11px', color: '#94a3b8', marginTop: '4px' }}>
-              {data.surplus_energy_mwh.toLocaleString()} MWh surplus spill ({data.surplus_intervals} intervals)
+              {data.surplus_energy_mwh.toLocaleString()} MWh surplus dumped ({data.surplus_intervals} time slots)
             </div>
           </div>
 
@@ -215,7 +215,7 @@ export const FinancialCalculator: React.FC<Props> = ({ gateClosureHour }) => {
             padding: '14px'
           }}>
             <div style={{ fontSize: '11px', color: '#38bdf8', textTransform: 'uppercase', fontWeight: 600 }}>
-              Avg Cost / Interval
+              Average Cost / Half-Hour
             </div>
             <div style={{ fontSize: '20px', fontWeight: 700, color: '#bae6fd', marginTop: '4px', fontFamily: 'monospace' }}>
               £{data.avg_cost_per_interval_gbp.toFixed(0)}
@@ -233,13 +233,13 @@ export const FinancialCalculator: React.FC<Props> = ({ gateClosureHour }) => {
             padding: '14px'
           }}>
             <div style={{ fontSize: '11px', color: '#c084fc', textTransform: 'uppercase', fontWeight: 600 }}>
-              Worst Peak Loss
+              Worst Single Half-Hour Loss
             </div>
             <div style={{ fontSize: '20px', fontWeight: 700, color: '#f3e8ff', marginTop: '4px', fontFamily: 'monospace' }}>
               {formatGBP(data.worst_single_deficit_gbp)}
             </div>
             <div style={{ fontSize: '11px', color: '#94a3b8', marginTop: '4px' }}>
-              Single half-hour max exposure
+              Single biggest shortfall event
             </div>
           </div>
         </div>

@@ -103,10 +103,10 @@ export const App: React.FC = () => {
         totalIntervals={timeSeries.length}
       />
 
-      {/* KPI Cards (MAE, RMSE, Bias, P90 Buffer) */}
+      {/* KPI Cards */}
       <KpiCards metrics={metrics} loading={loading} />
 
-      {/* Time-Series Chart (Actual vs DA Gate-Closure Forecast) */}
+      {/* Time-Series Chart (Actual vs Predicted Wind) */}
       <TimeSeriesChart
         data={timeSeries}
         loading={loading}
@@ -143,7 +143,7 @@ export const App: React.FC = () => {
             justifyContent: 'center'
           }}
         >
-          <span>Procurement & Settlement Profiles</span>
+          <span>Buying Guidance & Daily Patterns</span>
         </button>
 
         <button
@@ -165,7 +165,7 @@ export const App: React.FC = () => {
             justifyContent: 'center'
           }}
         >
-          <span>Imbalance Financial Exposure</span>
+          <span>Penalty & Risk Calculator</span>
         </button>
 
         <button
@@ -187,7 +187,7 @@ export const App: React.FC = () => {
             justifyContent: 'center'
           }}
         >
-          <span>Statistical Bias Correction</span>
+          <span>Smart Forecast Tuning</span>
         </button>
 
         <button
@@ -209,7 +209,7 @@ export const App: React.FC = () => {
             justifyContent: 'center'
           }}
         >
-          <span>Gate Closure Sensitivity</span>
+          <span>Timing & Accuracy</span>
         </button>
       </div>
 
@@ -261,7 +261,7 @@ export const App: React.FC = () => {
         color: 'var(--text-dim)'
       }}>
         <span>UK Wholesale Day-Ahead Wind Forecasting & Decision Desk</span>
-        <span>Data: National Grid ESO via Elexon BMRS (FUELHH / WINDFOR)</span>
+        <span>Data: National Grid ESO Wind Generation Records</span>
       </footer>
     </div>
   );
