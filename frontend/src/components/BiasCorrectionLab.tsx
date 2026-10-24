@@ -204,7 +204,7 @@ export const BiasCorrectionLab: React.FC<Props> = ({ gateClosureHour }) => {
       }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
           <div style={{ fontSize: '13px', fontWeight: 600, color: '#0f172a' }}>
-            Trajectory Comparison: Actual vs Raw Elexon DA vs Debiased Model
+            Trajectory Comparison: Actual vs Standard Forecast vs Auto-Tuned Forecast
           </div>
           <div style={{ display: 'flex', gap: '8px' }}>
             {[1, 3, 7].map((days) => (
