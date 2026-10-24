@@ -11,18 +11,6 @@
   <a href="https://github.com/FARINATTAR/kjhwr-"><img src="https://img.shields.io/badge/CI_Pipeline-Passing-10b981?style=for-the-badge&logo=githubactions" alt="CI"/></a>
 </p>
 
-### Evaluation Status
-
-| Guardrail | Status | Tests |
-|:--|:--|:--|
-| Zero-lookahead (no future data leakage) | Passed | 2 |
-| Error metric consistency (RMSE >= MAE > 0) | Passed | 2 |
-| Extreme weather stress tests (storms and calm spells) | Passed | 2 |
-| Physical output floor (minimum 800 MW) | Passed | 2 |
-| Financial penalty conservation (zero error = zero cost) | Passed | 2 |
-| API contracts and data integrity (all 10 endpoints) | Passed | 21 |
-| **Total** | **All Passed** | **31** |
-
 ---
 
 ## Problem
@@ -123,20 +111,6 @@ A Random Forest model (scikit-learn) scores each forecast 0--100% based on how c
 
 ---
 
-## Key Formulas and Invariants
-
-These rules are enforced automatically in the test suite:
-
-| Rule | What it means |
-|:--|:--|
-| `RMSE >= MAE > 0` | Error metrics are mathematically consistent (RMSE always equals or exceeds MAE) |
-| `P95 >= P90 > 0` | The conservative reserve is always at least as large as the standard reserve |
-| `Corrected forecast >= 800 MW` | No forecast drops below the minimum physical wind output |
-| `Zero error = GBP 0 penalty` | A perfect forecast incurs no penalty |
-| `Higher price spread = higher penalty` | Penalties grow when market stress increases |
-
----
-
 ## API Endpoints
 
 Interactive docs: [windcast-analytics-api.onrender.com/docs](https://windcast-analytics-api.onrender.com/docs)
@@ -158,25 +132,36 @@ Common parameters: `start_date`, `end_date`, `gate_closure_hour`, `window_days`,
 
 ---
 
-## Test Suite
+## Evaluation and Testing
 
-31 tests, all passing. Run with:
+31 tests, all passing. CI runs on every push via GitHub Actions.
 
 ```bash
 cd backend
 python -m pytest tests/ -v
 ```
 
-| Category | Count | What is tested |
-|:--|:--|:--|
-| Temporal isolation | 2 | Forecasts never use data from after the auction cutoff |
-| Error math | 2 | RMSE >= MAE > 0 holds for every time horizon |
-| Extreme weather | 2 | Reserve buffers remain valid during storms (>18 GW) and calm spells (<5 GW) |
-| Physical limits | 2 | Corrected forecasts stay above 800 MW minimum |
-| Financial rules | 2 | Zero error gives zero penalty; penalties increase with price spread |
-| API contracts | 21 | All 10 endpoints return valid responses; database has 1,488 expected records |
+### Guardrails
 
-CI runs on every push via GitHub Actions.
+| Guardrail | Status | Tests |
+|:--|:--|:--|
+| Zero-lookahead (no future data leakage) | Passed | 2 |
+| Error metric consistency (RMSE >= MAE > 0) | Passed | 2 |
+| Extreme weather stress tests (storms and calm spells) | Passed | 2 |
+| Physical output floor (minimum 800 MW) | Passed | 2 |
+| Financial penalty conservation (zero error = zero cost) | Passed | 2 |
+| API contracts and data integrity (all 10 endpoints) | Passed | 21 |
+| **Total** | **All Passed** | **31** |
+
+### Enforced Invariants
+
+| Rule | Meaning |
+|:--|:--|
+| `RMSE >= MAE > 0` | RMSE always equals or exceeds MAE (mathematical property) |
+| `P95 >= P90 > 0` | Conservative reserve is always at least as large as standard |
+| `Corrected forecast >= 800 MW` | No forecast drops below minimum physical wind output |
+| `Zero error = GBP 0 penalty` | A perfect forecast incurs no penalty |
+| `Higher price spread = higher penalty` | Penalties grow when market stress increases |
 
 ---
 
