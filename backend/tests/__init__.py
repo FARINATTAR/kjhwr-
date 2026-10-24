@@ -1,1 +1,1 @@
-"""Test suite package for REint backend"""
+"""Test suite package for backend"""

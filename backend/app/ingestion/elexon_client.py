@@ -13,7 +13,7 @@ class ElexonClient:
     def __init__(self, timeout: float = 20.0):
         self.timeout = timeout
         self.headers = {
-            "User-Agent": "REint-Energy-Analytics/1.0",
+            "User-Agent": "Energy-Analytics/1.0",
             "Accept": "application/json"
         }
 

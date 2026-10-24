@@ -1,4 +1,4 @@
-"""REint Backend Ingestion Module"""
+"""Backend Ingestion Module"""
 from app.ingestion.elexon_client import ElexonClient
 from app.ingestion.pipeline import DataPipeline, pipeline
 

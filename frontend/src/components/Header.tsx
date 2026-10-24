@@ -31,7 +31,7 @@ export const Header: React.FC<HeaderProps> = ({ onExportCSV }) => {
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <h1 style={{ fontSize: '1.35rem', fontWeight: 700, letterSpacing: '-0.02em' }}>
-              REint Wind Procurement & Forecast Desk
+              Wind Forecasting & Power Trading Decision Desk
             </h1>
             <span className="badge badge-success">
               <ShieldCheck size={12} /> Live Pilot

@@ -5,7 +5,7 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: reint-backend
+    container_name: energy-backend
     ports:
       - "8000:8000"
     volumes:
@@ -18,7 +18,7 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    container_name: reint-frontend
+    container_name: energy-frontend
     ports:
       - "3000:80"
     depends_on:

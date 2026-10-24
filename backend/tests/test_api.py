@@ -12,7 +12,7 @@ def test_root_endpoint():
     assert response.status_code == 200
     data = response.json()
     assert data["status"] == "online"
-    assert "REint" in data["app"]
+    assert "Energy" in data["app"]
 
 def test_health_endpoint():
     response = client.get("/api/health")

@@ -55,7 +55,6 @@ export const FinancialCalculator: React.FC<Props> = ({ gateClosureHour }) => {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px', marginBottom: '20px' }}>
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span style={{ fontSize: '20px' }}>💷</span>
             <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 600, color: '#f8fafc' }}>
               Financial Impact & Imbalance Exposure Calculator
             </h3>

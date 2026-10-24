@@ -1,1 +1,1 @@
-"""REint Energy Analytics Application Package"""
+"""Energy Analytics Application Package"""

@@ -1,5 +1,5 @@
 """
-Main FastAPI Application entry point for REint Energy Analytics.
+Main FastAPI Application entry point for Energy Analytics.
 """
 from contextlib import asynccontextmanager
 from fastapi import FastAPI

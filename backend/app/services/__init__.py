@@ -1,4 +1,4 @@
-"""Services module for REint analytics engine"""
+"""Services module for analytics engine"""
 from app.services.trading import (
     calculate_da_cutoff,
     get_day_ahead_paired_series,

@@ -1,7 +1,7 @@
 """
 Statistical bias correction engine applying rolling mean bias removal
 to improve Day-Ahead wind forecast accuracy.
-Demonstrates the value proposition of REint AI's analytical layer
+Demonstrates the value proposition of an adaptive analytical layer
 on top of raw Elexon NWP forecasts.
 """
 from typing import Dict, List
@@ -65,7 +65,7 @@ def apply_bias_correction(paired_series: List[Dict], window_days: int = 7) -> Li
 
 def compare_raw_vs_corrected(paired_series: List[Dict], window_days: int = 7) -> Dict:
     """
-    Produces a side-by-side comparison of raw Elexon forecast vs REint bias-corrected
+    Produces a side-by-side comparison of raw Elexon forecast vs debiased
     forecast, computing improvement percentages.
     """
     corrected = apply_bias_correction(paired_series, window_days)

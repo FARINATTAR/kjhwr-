@@ -1,5 +1,5 @@
 """
-Application configuration for REint Wind Forecast & Procurement Analytics.
+Application configuration for Wind Forecast & Procurement Analytics.
 """
 from pathlib import Path
 from pydantic import BaseModel
@@ -9,7 +9,7 @@ DATA_DIR = BASE_DIR / "data"
 DATA_DIR.mkdir(exist_ok=True)
 
 class Settings(BaseModel):
-    app_name: str = "REint Energy Analytics - UK Day-Ahead Wind Forecasting"
+    app_name: str = "Energy Analytics - UK Day-Ahead Wind Forecasting"
     app_version: str = "1.0.0"
     debug: bool = False
     
@@ -28,6 +28,6 @@ class Settings(BaseModel):
     default_gate_closure_minute: int = 0
     
     # Database path
-    db_path: str = str(DATA_DIR / "reint_energy.db")
+    db_path: str = str(DATA_DIR / "energy_analytics.db")
 
 settings = Settings()

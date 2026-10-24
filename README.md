@@ -1,11 +1,11 @@
-# REint Energy Analytics Platform
+# WindCast Energy Analytics Platform
 ### Day-Ahead Wind Generation Forecasting & Power Trading Decision System
 
 ---
 
 ## Executive Summary
 
-The REint Energy Analytics Platform is an institutional-grade forecasting evaluation and commercial decision support system designed for Great Britain (GB) power market participants. Operating within the Balancing and Settlement Code (BSC) framework governed by Elexon and National Grid ESO, the platform bridges numerical weather prediction (NWP) forecasting data with day-ahead wholesale power trading and dispatch hedging.
+The WindCast Energy Analytics Platform is an institutional-grade forecasting evaluation and commercial decision support system designed for Great Britain (GB) power market participants. Operating within the Balancing and Settlement Code (BSC) framework governed by Elexon and National Grid ESO, the platform bridges numerical weather prediction (NWP) forecasting data with day-ahead wholesale power trading and dispatch hedging.
 
 Wholesale power traders, portfolio dispatchers, and risk managers face a persistent challenge: standard forecast metrics (e.g., Mean Absolute Error in Megawatts) fail to capture the asymmetric financial penalties incurred in real-time settlement. This platform provides an end-to-end framework to ingest actual generation outturn, reconstruct decision-horizon forecasts without lookahead bias, quantify monetary exposure under System Buy and System Sell cash-out prices, and apply adaptive statistical debiasing prior to auction submission.
 
@@ -259,4 +259,4 @@ cd backend
 
 ---
 
-*REint Energy Analytics Platform. Data scope: January 2026 UK National Grid / Elexon outturn.*
+*WindCast Energy Analytics Platform. Data scope: January 2026 UK National Grid / Elexon outturn.*

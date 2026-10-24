@@ -76,7 +76,7 @@ export const App: React.FC = () => {
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.setAttribute('download', `REint_UK_Wind_Jan2026_Gate${gateClosureHour}h.csv`);
+      link.setAttribute('download', `UK_Wind_Jan2026_Gate${gateClosureHour}h.csv`);
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -140,12 +140,10 @@ export const App: React.FC = () => {
             transition: 'all 0.2s ease',
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'center',
-            gap: '8px'
+            justifyContent: 'center'
           }}
         >
-          <span>🛡️</span>
-          <span>Procurement & Settl. Profiles</span>
+          <span>Procurement & Settlement Profiles</span>
         </button>
 
         <button
@@ -164,12 +162,10 @@ export const App: React.FC = () => {
             transition: 'all 0.2s ease',
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'center',
-            gap: '8px'
+            justifyContent: 'center'
           }}
         >
-          <span>💷</span>
-          <span>£ Imbalance Financials</span>
+          <span>Imbalance Financial Exposure</span>
         </button>
 
         <button
@@ -188,12 +184,10 @@ export const App: React.FC = () => {
             transition: 'all 0.2s ease',
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'center',
-            gap: '8px'
+            justifyContent: 'center'
           }}
         >
-          <span>🧠</span>
-          <span>REint Bias Correction Lab</span>
+          <span>Statistical Bias Correction</span>
         </button>
 
         <button
@@ -212,11 +206,9 @@ export const App: React.FC = () => {
             transition: 'all 0.2s ease',
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'center',
-            gap: '8px'
+            justifyContent: 'center'
           }}
         >
-          <span>⏳</span>
           <span>Gate Closure Sensitivity</span>
         </button>
       </div>
@@ -268,7 +260,7 @@ export const App: React.FC = () => {
         fontSize: '0.78rem',
         color: 'var(--text-dim)'
       }}>
-        <span>REint Energy Analytics Pilot | UK Wholesale Day-Ahead Trading Desk</span>
+        <span>UK Wholesale Day-Ahead Wind Forecasting & Decision Desk</span>
         <span>Data: National Grid ESO via Elexon BMRS (FUELHH / WINDFOR)</span>
       </footer>
     </div>

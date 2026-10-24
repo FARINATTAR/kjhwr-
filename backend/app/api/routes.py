@@ -1,5 +1,5 @@
 """
-API Routes for REint Wind Forecasting and Day-Ahead Trading Analytics.
+API Routes for Wind Forecasting and Day-Ahead Trading Analytics.
 """
 from typing import List, Optional
 from fastapi import APIRouter, Query, HTTPException
@@ -170,7 +170,7 @@ def get_bias_correction_analysis(
     window_days: int = Query(default=7, ge=1, le=14, description="Trailing bias calculation window in days")
 ):
     """
-    Evaluates REint's analytical bias correction layer applied to raw Elexon forecasts.
+    Evaluates statistical bias correction layer applied to raw Elexon forecasts.
     Returns side-by-side MAE improvement metrics and corrected time series.
     """
     paired = get_day_ahead_paired_series(

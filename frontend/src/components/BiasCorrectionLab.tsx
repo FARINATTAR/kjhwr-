@@ -48,7 +48,7 @@ export const BiasCorrectionLab: React.FC<Props> = ({ gateClosureHour }) => {
     time: `${d.settlementDate.slice(5)} SP${d.settlementPeriod}`,
     Actual: d.actualMW,
     'Raw Elexon DA': d.dayAheadForecastMW,
-    'REint Corrected': d.correctedForecastMW,
+    'Debiased Forecast': d.correctedForecastMW,
     rawError: d.errorMW,
     correctedError: d.correctedErrorMW
   })) || [];
@@ -65,9 +65,8 @@ export const BiasCorrectionLab: React.FC<Props> = ({ gateClosureHour }) => {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px', marginBottom: '20px' }}>
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span style={{ fontSize: '20px' }}>🧠</span>
             <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 600, color: '#f8fafc' }}>
-              REint AI Statistical Bias-Correction Engine
+              Statistical Bias-Correction Engine
             </h3>
             <span style={{
               background: 'rgba(16, 185, 129, 0.15)',
@@ -83,7 +82,7 @@ export const BiasCorrectionLab: React.FC<Props> = ({ gateClosureHour }) => {
             </span>
           </div>
           <p style={{ margin: '6px 0 0', fontSize: '13px', color: '#94a3b8', maxWidth: '750px' }}>
-            Demonstrates REint's value-add on top of raw Elexon forecasts. A trailing-window rolling bias correction
+            Demonstrates the value-add of an adaptive debiasing layer on top of raw Elexon forecasts. A trailing-window rolling bias correction
             removes systematic over-forecasting errors before placing Day-Ahead bids.
           </p>
         </div>
@@ -204,7 +203,7 @@ export const BiasCorrectionLab: React.FC<Props> = ({ gateClosureHour }) => {
       }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
           <div style={{ fontSize: '13px', fontWeight: 600, color: '#e2e8f0' }}>
-            Trajectory Comparison: Actual vs Raw Elexon DA vs REint Corrected
+            Trajectory Comparison: Actual vs Raw Elexon DA vs Debiased Model
           </div>
           <div style={{ display: 'flex', gap: '8px' }}>
             {[1, 3, 7].map((days) => (
@@ -264,7 +263,7 @@ export const BiasCorrectionLab: React.FC<Props> = ({ gateClosureHour }) => {
                 />
                 <Line
                   type="monotone"
-                  dataKey="REint Corrected"
+                  dataKey="Debiased Forecast"
                   stroke="#10b981"
                   strokeWidth={2}
                   dot={false}
