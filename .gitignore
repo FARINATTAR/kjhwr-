@@ -24,6 +24,7 @@ yarn-error.log*
 *.db
 *.sqlite
 *.sqlite3
+*.csv
 
 # Environment
 .env
@@ -35,3 +36,4 @@ yarn-error.log*
 .DS_Store
 Thumbs.db
 *.docx
+docs/
