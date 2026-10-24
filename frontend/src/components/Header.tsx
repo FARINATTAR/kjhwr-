@@ -39,7 +39,7 @@ export const Header: React.FC<HeaderProps> = ({ onExportCSV }) => {
             </span>
           </div>
           <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-            UK Day-Ahead Wholesale Power Market | National Grid Wind Data Analytics | January 2026
+            UK Day-Ahead Wholesale Power Market | Elexon BMRS Wind Data Analytics | January 2026
           </p>
         </div>
       </div>

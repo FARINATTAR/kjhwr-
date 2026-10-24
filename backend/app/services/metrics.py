@@ -29,6 +29,7 @@ def calculate_overall_metrics(paired_series: List[Dict]) -> Dict:
     sum_actual = 0.0
     sum_forecast = 0.0
     sum_pct_error = 0.0
+    mape_count = 0  # count of intervals where MAPE is calculable (actual > 0)
     
     max_overforecast = 0.0
     max_underforecast = 0.0
@@ -50,16 +51,17 @@ def calculate_overall_metrics(paired_series: List[Dict]) -> Dict:
         if -error > max_underforecast:
             max_underforecast = -error
             
-        # Avoid division by zero with small epsilon
-        denom = max(actual, 100.0)
-        sum_pct_error += (abs_err / denom) * 100.0
+        # MAPE: skip intervals where actual is zero to avoid division by zero
+        if actual > 0:
+            sum_pct_error += (abs_err / actual) * 100.0
+            mape_count += 1
         
     mae = sum_abs_error / n
     rmse = math.sqrt(sum_sq_error / n)
     mean_bias = sum_bias / n
     mean_actual = sum_actual / n
     mean_forecast = sum_forecast / n
-    mape = sum_pct_error / n
+    mape = (sum_pct_error / mape_count) if mape_count > 0 else 0.0
     nmae = (mae / mean_actual * 100.0) if mean_actual > 0 else 0.0
     
     return {

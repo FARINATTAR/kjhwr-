@@ -7,6 +7,10 @@ COPY package*.json ./
 RUN npm ci
 
 COPY . .
+
+# Use docker-specific env (empty VITE_API_URL so nginx proxies /api to backend)
+COPY .env.docker .env.production
+
 RUN npm run build
 
 # Production serve stage with Nginx

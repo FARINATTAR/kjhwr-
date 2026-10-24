@@ -32,17 +32,20 @@ export const App: React.FC = () => {
   const [metrics, setMetrics] = useState<AccuracyMetrics | null>(null);
   const [settlementProfile, setSettlementProfile] = useState<SettlementPeriodData[]>([]);
   const [dailyTrends, setDailyTrends] = useState<DailyBreakdownData[]>([]);
+  const [apiError, setApiError] = useState<string | null>(null);
 
   // Fetch data whenever filters change
   useEffect(() => {
     let isMounted = true;
     setLoading(true);
 
+    setApiError(null);
+
     Promise.all([
       api.getTimeSeries(startDate, endDate, gateClosureHour),
-      api.getMetrics('2026-01-01', '2026-01-31', gateClosureHour),
-      api.getSettlementAnalysis('2026-01-01', '2026-01-31', gateClosureHour),
-      api.getDailyBreakdown(gateClosureHour)
+      api.getMetrics(startDate, endDate, gateClosureHour),
+      api.getSettlementAnalysis(startDate, endDate, gateClosureHour),
+      api.getDailyBreakdown(startDate, endDate, gateClosureHour)
     ])
       .then(([ts, met, sp, dt]) => {
         if (!isMounted) return;
@@ -54,7 +57,10 @@ export const App: React.FC = () => {
       })
       .catch((err) => {
         console.error('API Fetch error:', err);
-        if (isMounted) setLoading(false);
+        if (isMounted) {
+          setApiError(`Failed to load data: ${err.message}`);
+          setLoading(false);
+        }
       });
 
     return () => {
@@ -104,6 +110,36 @@ export const App: React.FC = () => {
         }}
         totalIntervals={timeSeries.length}
       />
+
+      {/* Error Banner */}
+      {apiError && (
+        <div style={{
+          background: '#fef2f2',
+          border: '1px solid #fecaca',
+          borderRadius: '10px',
+          padding: '12px 18px',
+          marginBottom: '16px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '10px',
+          color: '#991b1b',
+          fontSize: '0.9rem'
+        }}>
+          <span style={{ fontWeight: 600 }}>⚠ API Error</span>
+          <span>{apiError}</span>
+          <button
+            onClick={() => setApiError(null)}
+            style={{
+              marginLeft: 'auto',
+              background: 'none',
+              border: 'none',
+              color: '#991b1b',
+              cursor: 'pointer',
+              fontSize: '16px'
+            }}
+          >×</button>
+        </div>
+      )}
 
       {/* KPI Cards */}
       <KpiCards metrics={metrics} loading={loading} />
@@ -292,7 +328,7 @@ export const App: React.FC = () => {
         color: 'var(--text-dim)'
       }}>
         <span>UK Wholesale Day-Ahead Wind Forecasting & Decision Desk</span>
-        <span>Data: National Grid ESO Wind Generation Records</span>
+        <span>Data: Elexon BMRS FUELHH &amp; WINDFOR | January 2026</span>
       </footer>
     </div>
   );

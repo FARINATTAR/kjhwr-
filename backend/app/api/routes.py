@@ -35,14 +35,18 @@ from app.schemas.models import (
 
 router = APIRouter(prefix="/api")
 
-@router.get("/health", response_model=HealthResponse)
+@router.get("/health")
 def get_health():
     """Health check endpoint providing database stats and target scope."""
     stats = pipeline.get_database_stats()
     return {
         "status": "healthy",
         "version": settings.app_version,
-        "database": stats,
+        "database": {
+            "actuals_count": stats["actuals_count"],
+            "forecasts_count": stats["forecasts_count"]
+        },
+        "data_source": stats.get("data_source", "unknown"),
         "data_scope": f"{settings.target_start_date} to {settings.target_end_date}"
     }
 
@@ -135,12 +139,14 @@ def get_settlement_period_analysis(
 
 @router.get("/daily-breakdown", response_model=List[DailyBreakdownItem])
 def get_daily_performance(
+    start_date: str = Query(default="2026-01-01", description="Start date (YYYY-MM-DD)"),
+    end_date: str = Query(default="2026-01-31", description="End date (YYYY-MM-DD)"),
     gate_closure_hour: int = Query(default=11, ge=0, le=23, description="Gate closure hour (D-1)")
 ):
-    """Daily breakdown for January 2026 calendar and heatmap visualization."""
+    """Daily breakdown for calendar and heatmap visualization."""
     paired = get_day_ahead_paired_series(
-        start_date="2026-01-01",
-        end_date="2026-01-31",
+        start_date=start_date,
+        end_date=end_date,
         gate_closure_hour=gate_closure_hour
     )
     return calculate_daily_breakdown(paired)

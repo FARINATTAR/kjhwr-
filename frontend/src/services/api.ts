@@ -62,8 +62,14 @@ export const api = {
     return res.json();
   },
 
-  async getDailyBreakdown(gateClosureHour: number = 11): Promise<DailyBreakdownData[]> {
-    const res = await fetch(`${BASE_URL}/api/daily-breakdown?gate_closure_hour=${gateClosureHour}`);
+  async getDailyBreakdown(
+    startDate: string = '2026-01-01',
+    endDate: string = '2026-01-31',
+    gateClosureHour: number = 11
+  ): Promise<DailyBreakdownData[]> {
+    const res = await fetch(
+      `${BASE_URL}/api/daily-breakdown?start_date=${startDate}&end_date=${endDate}&gate_closure_hour=${gateClosureHour}`
+    );
     if (!res.ok) throw new Error('Failed to fetch daily breakdown');
     return res.json();
   },
