@@ -1,227 +1,254 @@
-# ⚡ WindCast Energy Analytics Platform
-### Institutional Day-Ahead Wind Forecasting & Wholesale Power Decision Terminal
+# WindCast Analytics
 
-[![Live Web Application](https://img.shields.io/badge/Live%20App-windcast--analytics.vercel.app-059669?style=for-the-badge&logo=vercel)](https://windcast-analytics.vercel.app)
-[![Live Backend API & Swagger](https://img.shields.io/badge/API%20Docs-Render%20Swagger-0284c7?style=for-the-badge&logo=fastapi)](https://windcast-analytics-api.onrender.com/docs)
-[![Automated Invariant Tests](https://img.shields.io/badge/Guardrail%20Tests-31%2F31%20Passing-success?style=for-the-badge&logo=pytest)](https://github.com/FARINATTAR/kjhwr-)
-[![GitHub CI Pipeline](https://img.shields.io/badge/CI%20Build-Passing-10b981?style=for-the-badge&logo=githubactions)](https://github.com/FARINATTAR/kjhwr-)
+**Day-Ahead Wind Generation Forecasting and Decision Terminal for UK Wholesale Electricity Markets**
 
----
-
-## 📌 Executive Summary
-
-**WindCast** is a commercial decision-support and forecasting evaluation platform designed for a **UK Energy Utility** operating in the wholesale electricity market (EPEX SPOT / Nord Pool).
-
-To supply consumer demand reliably, the utility's trading desk must purchase power in the Day-Ahead auction one day before physical delivery. Because wind generation is weather-dependent, trading desks face a critical dilemma: **standard forecast error metrics (like MAE in MW) treat over-predictions and under-predictions symmetrically, but the UK Balancing and Settlement Code (BSC) punishes them asymmetrically with heavy cash-out penalties.**
-
-WindCast bridges this gap:
-1. **Reconstructs Decision-Horizon Forecasts** with strict **Zero-Lookahead Bias** (locked at D-1 11:00 GMT gate closure).
-2. **Quantifies Real Monetary Exposure** under Elexon System Buy Price (SBP) and System Sell Price (SSP) cash-out mechanisms.
-3. **Applies Statistical Debiasing & ML Reliability Scoring** to reduce imbalance penalty exposure and recommend exact thermal backup capacity.
+[![Live App](https://img.shields.io/badge/Live_App-windcast--analytics.vercel.app-059669?style=flat-square&logo=vercel)](https://windcast-analytics.vercel.app)
+[![API Docs](https://img.shields.io/badge/API_Docs-Swagger-0284c7?style=flat-square&logo=fastapi)](https://windcast-analytics-api.onrender.com/docs)
+[![Tests](https://img.shields.io/badge/Tests-31%2F31_Passing-10b981?style=flat-square&logo=pytest)](https://github.com/FARINATTAR/kjhwr-)
+[![CI](https://img.shields.io/badge/CI-Passing-10b981?style=flat-square&logo=githubactions)](https://github.com/FARINATTAR/kjhwr-)
 
 ---
 
-## 🌐 Live Production Deployments
+## What This Solves
 
-| Component | Platform | Live URL | Description |
-|:---|:---|:---|:---|
-| **Web Dashboard** | **Vercel** | [windcast-analytics.vercel.app](https://windcast-analytics.vercel.app) | Responsive React trading desk terminal |
-| **API & Swagger Docs** | **Render** | [windcast-analytics-api.onrender.com/docs](https://windcast-analytics-api.onrender.com/docs) | Interactive OpenAPI / Swagger interface |
-| **Backend Health** | **Render** | [windcast-analytics-api.onrender.com/api/health](https://windcast-analytics-api.onrender.com/api/health) | System health & database integrity check |
+A UK energy utility must buy power in the Day-Ahead auction (D-1) before delivery. Wind generation is weather-dependent, so forecast errors create **imbalance penalties** under the Balancing and Settlement Code (BSC).
+
+Standard error metrics (MAE) treat over-prediction and under-prediction equally. The BSC does not -- penalties are asymmetric through System Buy Price (SBP) and System Sell Price (SSP) mechanisms.
+
+WindCast addresses this by:
+
+- Enforcing zero-lookahead temporal isolation at D-1 11:00 GMT gate closure
+- Quantifying real monetary exposure under SBP/SSP cash-out pricing
+- Applying statistical debiasing and ML reliability scoring to reduce penalty exposure
 
 ---
 
-## 🏗️ Architecture at a Glance
+## Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────────────────┐
-│                    Client Terminal (Vercel)                             │
-│  React 18 + TypeScript + Vite + Recharts                                │
-│  • Fully Responsive Layout (Mobile 375px → Ultrawide 1440px+)          │
-│  • Financial Imbalance Cash-Out Simulator with Live Price Spread Curves │
-│  • Rolling-Window Auto-Tuning Lab (Actual vs Raw vs Debiased Model)     │
-│  • Multi-Horizon Information Decay Sensitivity Curves                   │
-│  • 48-Period Settlement Distribution & High-Risk Peak Hour Badges       │
-└────────────────────────────────────┬────────────────────────────────────┘
-                                     │ HTTPS / REST (JSON)
-┌────────────────────────────────────▼────────────────────────────────────┐
-│                    Analytical API Engine (Render)                       │
-│  FastAPI (Python 3.11) + Uvicorn + Pydantic v2 + scikit-learn           │
-│  • Strict Lookahead-Free Temporal Sequestering Engine                   │
-│  • Random Forest Forecast Uncertainty Scorer (0-100% Reliability)       │
-│  • Rolling Adaptive Bias Correction Service                             │
-│  • BSC Cash-Out Imbalance Penalty Engine (SBP / SSP / DA Price)         │
-└────────────────────────────────────┬────────────────────────────────────┘
-                                     │ SQLite B-Tree Query
-┌────────────────────────────────────▼────────────────────────────────────┐
-│                    Data Storage Layer (Seeded SQLite)                   │
-│  1,488 actual outturn intervals + 5,952 multi-publish forecasts        │
-│  January 2026 UK National Grid ESO (FUELHH / WINDFOR datasets)         │
-└─────────────────────────────────────────────────────────────────────────┘
+                         HTTPS / REST (JSON)
+  +-----------------+         |         +---------------------+
+  |                 |         |         |                     |
+  |    Frontend     | ------> | ------> |    Backend API      |
+  |    (Vercel)     |         |         |    (Render)         |
+  |                 |         |         |                     |
+  |  React 18       |                   |  FastAPI            |
+  |  TypeScript     |                   |  Python 3.11        |
+  |  Vite           |                   |  Pydantic v2        |
+  |  Recharts       |                   |  scikit-learn       |
+  |                 |                   |                     |
+  +-----------------+                   +----------+----------+
+                                                   |
+                                            SQLite (B-Tree)
+                                                   |
+                                        +----------+----------+
+                                        |                     |
+                                        |    Data Layer       |
+                                        |                     |
+                                        |  1,488 actuals      |
+                                        |  5,952 forecasts    |
+                                        |  Jan 2026 ESO       |
+                                        |                     |
+                                        +---------------------+
 ```
 
----
-
-## 💡 Core Capabilities & Financial Mechanics
-
-### 1. Gate Closure & Zero-Lookahead Isolation
-* Day-Ahead auctions close at **11:00 GMT on Day D-1**.
-* To prevent data leakage, the engine enforces:  
-  $$\text{Cutoff} = \text{Date}(T_{\text{delivery}} - 1\text{ day}) + 11:00\text{ GMT}$$
-* Any forecast published after 11:00 GMT is strictly sequestered from Day-Ahead procurement decisions.
-
-### 2. Asymmetric Cash-Out Exposure Engine
-Standard MAE ignores market direction. WindCast models true Section T settlement:
-* **Wind Deficit (Over-Predicted: Forecast > Actual)**:
-  Utility short-falls the grid; must purchase emergency balancing volume at **System Buy Price (SBP)**:
-  $$\text{Penalty}_{\text{deficit}} = (\text{Forecast} - \text{Actual}) \times 0.5\,\text{h} \times (\text{SBP} - P_{\text{DA}})$$
-* **Wind Surplus (Under-Predicted: Forecast < Actual)**:
-  Utility over-generates; excess volume spilled at discounted **System Sell Price (SSP)**:
-  $$\text{Loss}_{\text{surplus}} = (\text{Actual} - \text{Forecast}) \times 0.5\,\text{h} \times (P_{\text{DA}} - \text{SSP})$$
-
-### 3. Adaptive Rolling De-Biasing Model
-* Applies a trailing calibration window ($W = 1, 3, 7\text{ days}$) across each of the 48 half-hour settlement slots:
-  $$\text{Bias}_{d, p} = \frac{1}{W} \sum_{k=1}^{W} (\hat{Y}_{d-k, p} - Y_{d-k, p}), \quad \hat{Y}_{d, p}^{\text{corrected}} = \max(800\text{ MW},\, \hat{Y}_{d, p} - \text{Bias}_{d, p})$$
-* **Result**: Achieves **15.2% MAE error reduction** and avoids **£14,200 in imbalance cash-out losses**.
-
-### 4. Non-Parametric Thermal Reserve Sizing
-* Computes deficit probability distributions:
-  * **P90 Reserve Buffer (+1,842.3 MW)**: Thermal backup required to cover 90% of wind shortfall drops.
-  * **P95 Conservative Buffer (+2,197.4 MW)**: High-security buffer for extreme ramp anomalies.
-
-### 5. Multi-Horizon Information Decay Sensitivity
-* Evaluates forecast accuracy progression across key market milestones:
-  * `07:00 GMT`: Early morning baseline position
-  * `11:00 GMT`: EPEX SPOT Day-Ahead Gate Closure (auction cutoff)
-  * `17:00 GMT`: Evening Final Physical Notification window
-  * `Intraday`: Continuous rolling 1-hour pre-delivery update
-* Demonstrates the economic trade-off between bid firmness and information freshness.
+**Data source**: UK National Grid ESO -- FUELHH (actual wind outturn) and WINDFOR (day-ahead forecasts) for January 2026.
 
 ---
 
-## 🔌 API Reference & Endpoints
+## Core Mechanics
 
-All endpoints return strongly typed, Pydantic-validated JSON responses. Interactive Swagger UI is live at [`/docs`](https://windcast-analytics-api.onrender.com/docs).
+### 1. Gate Closure and Zero-Lookahead Isolation
 
-| Method | Endpoint | Purpose | Key Query Parameters |
-|:---|:---|:---|:---|
-| `GET` | `/api/health` | Service health, record counts, and database scope | None |
-| `GET` | `/api/overview` | Aggregated executive KPIs for date ranges & gate closures | `start_date`, `end_date`, `gate_closure_hour` |
-| `GET` | `/api/timeseries` | Paired 30-min actuals vs active Day-Ahead forecast | `start_date`, `end_date`, `gate_closure_hour` |
-| `GET` | `/api/metrics` | Quantitative accuracy metrics (MAE, RMSE, MAPE, P90/P95 Buffers) | `start_date`, `end_date`, `gate_closure_hour` |
-| `GET` | `/api/settlement-analysis` | 48-period diurnal profile, peak hour flags (16:30-19:00 GMT) | `start_date`, `end_date`, `gate_closure_hour` |
-| `GET` | `/api/daily-breakdown` | 31-day January calendar breakdown of forecast error trends | `gate_closure_hour` |
-| `GET` | `/api/financial-impact` | Imbalance cash-out exposure simulator under SBP/SSP spreads | `sbp`, `ssp`, `da_price`, `gate_closure_hour` |
-| `GET` | `/api/bias-correction` | Rolling debiased model series, error drops & monetary savings | `window_days`, `gate_closure_hour` |
-| `GET` | `/api/gate-closure-sensitivity` | Multi-horizon error & financial loss decay across milestones | `start_date`, `end_date` |
-| `GET` | `/api/forecast-confidence` | ML Random Forest uncertainty score (0-100%) & feature weights | `gate_closure_hour` |
+Day-Ahead auctions close at 11:00 GMT on D-1. The engine enforces:
+
+```
+Cutoff = Date(T_delivery - 1 day) + 11:00 GMT
+```
+
+Any forecast published after this cutoff is excluded from pairing. This prevents data leakage and ensures test accuracy reflects real trading conditions.
+
+### 2. Asymmetric Cash-Out Exposure
+
+**Wind deficit** (forecast > actual) -- utility is short, buys at SBP:
+
+```
+Penalty_deficit = (Forecast - Actual) x 0.5h x (SBP - P_DA)
+```
+
+**Wind surplus** (forecast < actual) -- utility is long, sells at SSP discount:
+
+```
+Loss_surplus = (Actual - Forecast) x 0.5h x (P_DA - SSP)
+```
+
+### 3. Adaptive Rolling Debiasing
+
+A trailing calibration window (W = 1, 3, or 7 days) applied per settlement period:
+
+```
+Bias(d,p) = (1/W) * SUM[k=1..W]( Forecast(d-k,p) - Actual(d-k,p) )
+
+Corrected(d,p) = max( 800 MW,  Forecast(d,p) - Bias(d,p) )
+```
+
+The 800 MW floor enforces physical turbine output limits. Result: **15.2% MAE reduction** and **GBP 14,200 avoided imbalance losses**.
+
+### 4. Thermal Reserve Sizing (Non-Parametric Quantiles)
+
+- **P90 buffer: +1,842.3 MW** -- covers 90% of historical wind shortfalls
+- **P95 buffer: +2,197.4 MW** -- conservative reserve for extreme ramp events
+
+Invariant: `P95 >= P90 > 0`
+
+### 5. ML Reliability Scoring
+
+Random Forest model (scikit-learn) scores each forecast window 0-100% based on:
+- Forecast spread (max - min across publish times)
+- Forecast volatility (standard deviation)
+- Hour-of-day cyclical features
+- Forecast-to-recent-actual ratio
 
 ---
 
-## 🛡️ Evaluation Guardrails & Test Suite (31 Tests Passing)
+## Mathematical Invariants
 
-The platform is fortified by **31 automated unit, integration, and mathematical invariant tests** executing in GitHub Actions CI (`ci.yml`).
+These hold across all time horizons and are enforced in the test suite:
 
-```bash
-# Run full automated test suite from backend/
+| Invariant | Formula | Purpose |
+|:--|:--|:--|
+| Error convexity | `RMSE >= MAE > 0` | Proves correct statistical computation |
+| Buffer monotonicity | `P95 >= P90 > 0` | Ensures conservative reserve ordering |
+| Dispatch floor | `Y_corrected >= 800 MW` | Prevents physically impossible outputs |
+| Zero-error conservation | `Error = 0 implies Penalty = GBP 0.00` | Financial accounting consistency |
+| Penalty monotonicity | Higher spread implies higher penalty | Loss scales with market stress |
+
+---
+
+## API Endpoints
+
+Interactive Swagger UI: [windcast-analytics-api.onrender.com/docs](https://windcast-analytics-api.onrender.com/docs)
+
+| Method | Endpoint | Purpose |
+|:--|:--|:--|
+| GET | `/api/health` | Service health and database integrity |
+| GET | `/api/overview` | Executive KPIs for date range and gate closure |
+| GET | `/api/timeseries` | Paired 30-min actuals vs day-ahead forecast |
+| GET | `/api/metrics` | MAE, RMSE, MAPE, P90/P95 buffers |
+| GET | `/api/settlement-analysis` | 48-period diurnal profile with peak hour flags |
+| GET | `/api/daily-breakdown` | 31-day calendar of error trends |
+| GET | `/api/financial-impact` | Cash-out exposure under configurable SBP/SSP/DA prices |
+| GET | `/api/bias-correction` | Rolling debiased series with error reduction metrics |
+| GET | `/api/gate-closure-sensitivity` | Multi-horizon error decay across market milestones |
+| GET | `/api/forecast-confidence` | ML reliability score (0-100%) with feature weights |
+
+All endpoints return Pydantic-validated JSON. Key query parameters: `start_date`, `end_date`, `gate_closure_hour`, `window_days`, `sbp`, `ssp`, `da_price`.
+
+---
+
+## Test Suite -- 31 Tests Passing
+
+```
+cd backend
 python -m pytest tests/ -v
-# Output: 31 passed in 7.47s (100% success rate)
+# 31 passed in 7.47s
 ```
 
-### 🔬 Categorized Invariant Breakdown:
+Tests are organized into four files across six categories:
 
-#### 1. Temporal Isolation Guardrail (Zero-Lookahead Proof)
-* **What it tests**: Verifies that 100% of paired Day-Ahead forecasts obey `publish_time <= cutoff_time`.
-* **Why it matters**: Completely eliminates future data leakage; guarantees test accuracy reflects real-world trading performance.
-* **Test cases**: `test_calculate_da_cutoff_time`, `test_da_cutoff_day_ahead_timing`.
+| Category | Tests | What is Verified |
+|:--|:--|:--|
+| Temporal isolation | 2 | All paired forecasts obey `publish_time <= cutoff_time` -- eliminates lookahead bias |
+| Error invariants | 2 | `RMSE >= MAE > 0` holds across all horizons and periods |
+| Tail stress testing | 2 | P90/P95 buffers hold during storm spikes (>18 GW) and calm spells (<5 GW) |
+| Dispatch floor | 2 | Debiased outputs never drop below 800 MW physical threshold |
+| Financial conservation | 2 | Zero error yields GBP 0; penalties scale monotonically with spread |
+| API and data integrity | 21 | HTTP contracts on all 10 endpoints; database completeness (31 x 48 = 1,488 actuals) |
 
-#### 2. Mathematical Invariant Consistency
-* **What it tests**: Formally asserts $\text{RMSE} \ge \text{MAE} > 0$ across all time horizons and settlement periods.
-* **Why it matters**: Proves error distribution convexity and prevents statistical calculation anomalies.
-* **Test cases**: `test_quantitative_accuracy_invariants`, `test_metrics_rmse_greater_equal_mae`.
-
-#### 3. Extreme Tail Stress-Testing (Storms & Dropouts)
-* **What it tests**: Verifies non-parametric quantile buffers during Atlantic Storm spikes (>18 GW) and Calm Spell anomalies (<5 GW). Asserts $\text{P95 Buffer} \ge \text{P90 Buffer} > 0$.
-* **Why it matters**: Protects the utility from severe cash-out bankruptcy during sudden wind dropouts.
-* **Test cases**: `test_thermal_procurement_buffer`, `test_procurement_buffer_monotonicity`.
-
-#### 4. Physical Dispatch Floor Enforcement
-* **What it tests**: Ensures debiased forecasts never output values below the physical turbine threshold ($Y_{\text{floor}} \ge 800\text{ MW}$).
-* **Why it matters**: Prevents physically impossible negative generation dispatch commands.
-* **Test cases**: `test_bias_correction_physical_floor_enforcement`, `test_bias_correction_removes_systematic_overforecast`.
-
-#### 5. Balancing Mechanism Financial Conservation
-* **What it tests**: Asserts zero error strictly incurs £0.00 penalty, and penalties scale monotonically with cash-out spreads.
-* **Why it matters**: Guarantees accounting consistency and loss conservation.
-* **Test cases**: `test_financial_impact_zero_error_yields_zero_penalty`, `test_financial_impact_monotonicity`.
-
-#### 6. API Contracts & Database Integrity
-* **What it tests**: End-to-end HTTP contract testing across all 10 endpoints, plus January 2026 database completeness ($31 \times 48 = 1,488$ actuals).
-* **Test cases**: `test_api.py` (11 tests), `test_ingestion.py` (3 tests).
+CI runs automatically via GitHub Actions (`ci.yml`) on every push.
 
 ---
 
-## 🚀 Strategic Horizon & Next Evolution
+## Running Locally
 
-Key production enhancements designed for enterprise scale:
+### Docker (recommended)
 
-1. **Co-Located Battery (BESS) Arbitrage Dispatch**:
-   Linear programming optimization to automatically absorb surplus wind generation during high-SSP discount periods and discharge during peak deficit hours.
-
-2. **Multi-Model NWP Machine Learning Blending**:
-   Gradient Boosting (LightGBM/XGBoost) blending multi-provider numerical weather feeds (ECMWF, GFS, UK Met Office) with atmospheric pressure and 100m wind shear features.
-
-3. **Real-Time Elexon BMRS Webhook Stream**:
-   Direct ingestion daemon for live REMIT outage messages and real-time Initial Balancing Publication (B1610/B1630) streaming.
-
----
-
-## 💻 How to Run Locally
-
-### Option A: One-Command Docker Setup (Recommended)
 ```bash
-# Clone the repository
 git clone https://github.com/FARINATTAR/kjhwr-.git
 cd kjhwr-
-
-# Build and start both Frontend and Backend
 docker compose up --build -d
-
-# Verify containers are running
-docker compose ps
 ```
-* **Frontend**: `http://localhost:3000`
-* **Backend API & Swagger**: `http://localhost:8000/docs`
 
----
+- Frontend: `http://localhost:3000`
+- Backend / Swagger: `http://localhost:8000/docs`
 
-### Option B: Manual Local Setup
+### Manual
 
-#### 1. Backend (FastAPI)
+**Backend:**
 ```bash
 cd backend
 python -m venv .venv
-
-# Windows:
-.\.venv\Scripts\activate
-# macOS/Linux:
-source .venv/bin/activate
-
+.venv\Scripts\activate        # Windows
+source .venv/bin/activate     # macOS / Linux
 pip install -r requirements.txt
 python -m uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
-#### 2. Frontend (React + Vite)
+**Frontend:**
 ```bash
 cd frontend
 npm install
 npm run dev
 ```
+
 Navigate to `http://localhost:5173`.
 
 ---
 
-## ⚖️ Technical Compliance & AI Disclosure
-* **Scope**: January 2026 UK National Grid ESO Actual Wind Outturn (`FUELHH`) and Day-Ahead Forecasts (`WINDFOR`).
-* **Framework**: React 18 (TypeScript, Vite) + Python 3.11 (FastAPI, SQLite, scikit-learn).
-* **AI Tool Disclosure**: Built with pair-programming assistance from advanced AI tooling for rapid scaffolding, automated test suite generation, and regulatory market mechanic modeling, as permitted in the challenge specification.
+## Live Deployments
+
+| Component | Platform | URL |
+|:--|:--|:--|
+| Web Dashboard | Vercel | [windcast-analytics.vercel.app](https://windcast-analytics.vercel.app) |
+| API and Swagger | Render | [windcast-analytics-api.onrender.com/docs](https://windcast-analytics-api.onrender.com/docs) |
+| Health Check | Render | [windcast-analytics-api.onrender.com/api/health](https://windcast-analytics-api.onrender.com/api/health) |
+
+---
+
+## Future Scope
+
+1. **Battery storage (BESS) arbitrage dispatch** -- linear programming to absorb surplus wind during high-SSP periods and discharge during peak deficit
+2. **NWP model blending** -- gradient boosting (LightGBM/XGBoost) across ECMWF, GFS, and UK Met Office weather feeds with wind shear features
+3. **Real-time Elexon BMRS streaming** -- webhook ingestion for live REMIT outage messages and balancing publication data (B1610/B1630)
+
+---
+
+## Tech Stack
+
+| Layer | Technology |
+|:--|:--|
+| Frontend | React 18, TypeScript, Vite, Recharts |
+| Backend | Python 3.11, FastAPI, Uvicorn, Pydantic v2 |
+| ML | scikit-learn (Random Forest) |
+| Database | SQLite with B-Tree temporal indexing |
+| CI/CD | GitHub Actions, Vercel (frontend), Render (backend) |
+| Testing | pytest (31 tests) |
+
+---
+
+## AI Tools Used
+
+This project was built with pair-programming assistance from:
+
+- **Claude Opus 4.6 Thinking** -- architecture design, service logic, test suite generation, and regulatory market mechanic modeling
+- **Gemini 3.8 Flash Medium** -- rapid scaffolding, code review, and iterative UI refinement
+
+Usage was permitted under the challenge specification.
+
+---
+
+## Data Scope
+
+January 2026, UK National Grid ESO:
+- **FUELHH**: Half-hourly actual wind generation outturn (1,488 intervals)
+- **WINDFOR**: Day-ahead wind generation forecasts (5,952 records across multiple publish times)
