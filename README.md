@@ -1,6 +1,15 @@
 # WindCast Energy Analytics Platform
 ### Day-Ahead Wind Generation Forecasting & Power Trading Decision System
 
+[![Live Web Application](https://img.shields.io/badge/Live%20App-windcast--analytics.vercel.app-059669?style=for-the-badge&logo=vercel)](https://windcast-analytics.vercel.app)
+[![Live Backend API & Swagger](https://img.shields.io/badge/API%20Docs-Render%20Swagger-0284c7?style=for-the-badge&logo=fastapi)](https://windcast-analytics-api.onrender.com/docs)
+[![GitHub CI Tests](https://img.shields.io/badge/CI%20Tests-Passing-success?style=for-the-badge&logo=githubactions)](https://github.com/FARINATTAR/kjhwr-)
+
+> **🌐 Live Production Deployments:**
+> - **Live Web Application (Vercel):** [https://windcast-analytics.vercel.app](https://windcast-analytics.vercel.app)
+> - **Interactive Swagger API Docs (Render):** [https://windcast-analytics-api.onrender.com/docs](https://windcast-analytics-api.onrender.com/docs)
+> - **API Health Endpoint:** [https://windcast-analytics-api.onrender.com/api/health](https://windcast-analytics-api.onrender.com/api/health)
+
 ---
 
 ## Executive Summary
