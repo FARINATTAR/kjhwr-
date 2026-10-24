@@ -116,7 +116,7 @@ export const App: React.FC = () => {
       />
 
       {/* Standout Module Navigation Bar */}
-      <div style={{
+      <div className="tab-nav-bar" style={{
         display: 'flex',
         gap: '10px',
         margin: '28px 0 16px',
@@ -128,6 +128,7 @@ export const App: React.FC = () => {
         flexWrap: 'wrap'
       }}>
         <button
+          className="tab-btn"
           onClick={() => setActiveTab('hedging')}
           style={{
             flex: 1,
@@ -150,6 +151,7 @@ export const App: React.FC = () => {
         </button>
 
         <button
+          className="tab-btn"
           onClick={() => setActiveTab('financial')}
           style={{
             flex: 1,
@@ -172,6 +174,7 @@ export const App: React.FC = () => {
         </button>
 
         <button
+          className="tab-btn"
           onClick={() => setActiveTab('bias')}
           style={{
             flex: 1,
@@ -194,6 +197,7 @@ export const App: React.FC = () => {
         </button>
 
         <button
+          className="tab-btn"
           onClick={() => setActiveTab('sensitivity')}
           style={{
             flex: 1,
@@ -216,6 +220,7 @@ export const App: React.FC = () => {
         </button>
 
         <button
+          className="tab-btn"
           onClick={() => setActiveTab('confidence')}
           style={{
             flex: 1,
@@ -246,12 +251,7 @@ export const App: React.FC = () => {
             metrics={metrics}
             gateClosureHour={gateClosureHour}
           />
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(480px, 1fr))',
-            gap: '24px',
-            marginTop: '20px'
-          }}>
+          <div className="responsive-grid-2" style={{ marginTop: '20px' }}>
             <SettlementPeriodProfile
               data={settlementProfile}
               loading={loading}

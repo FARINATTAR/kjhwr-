@@ -26,7 +26,7 @@ export const DecisionBar: React.FC<DecisionBarProps> = ({
 
   return (
     <div className="card" style={{ marginBottom: '24px', padding: '16px 20px' }}>
-      <div style={{
+      <div className="decision-bar-inner" style={{
         display: 'flex',
         flexWrap: 'wrap',
         alignItems: 'center',

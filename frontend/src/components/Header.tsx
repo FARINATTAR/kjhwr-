@@ -7,7 +7,7 @@ interface HeaderProps {
 
 export const Header: React.FC<HeaderProps> = ({ onExportCSV }) => {
   return (
-    <header style={{
+    <header className="header-container" style={{
       display: 'flex',
       justifyContent: 'space-between',
       alignItems: 'center',
@@ -24,13 +24,14 @@ export const Header: React.FC<HeaderProps> = ({ onExportCSV }) => {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          boxShadow: '0 0 20px rgba(16, 185, 129, 0.3)'
+          boxShadow: '0 0 20px rgba(16, 185, 129, 0.3)',
+          flexShrink: 0
         }}>
           <Wind size={24} color="#ffffff" />
         </div>
         <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <h1 style={{ fontSize: '1.35rem', fontWeight: 700, letterSpacing: '-0.02em' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+            <h1 className="header-title" style={{ fontSize: '1.35rem', fontWeight: 700, letterSpacing: '-0.02em' }}>
               Wind Forecasting & Power Trading Decision Desk
             </h1>
             <span className="badge badge-success">
@@ -43,7 +44,7 @@ export const Header: React.FC<HeaderProps> = ({ onExportCSV }) => {
         </div>
       </div>
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+      <div className="header-actions" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
         <div style={{
           display: 'flex',
           alignItems: 'center',
