@@ -1,130 +1,217 @@
-# REint AI — UK Wind Generation Day-Ahead Trading & Forecasting Analytics Platform
-
-An institutional-grade Day-Ahead wind power forecasting evaluation and trading analytics platform designed for UK wholesale power desks and energy utilities. Built for the **REint AI Full-Stack SWE Challenge**.
-
----
-
-## ⚡ The Energy Trading Challenge
-
-In the UK power market (GB National Grid / Elexon BSC framework), wholesale power traders must submit generation schedules and hedge contracts prior to **Day-Ahead Gate Closure (11:00 GMT on Day D-1)** for delivery across the 48 half-hour settlement periods of Day D.
-
-```
-                    Day D-1                                              Day D (Delivery)
-   ─────────────────────────────────────────────┼─────────────────────────────────────────────►
-     07:00       09:00       11:00 (GATE CLOSURE)     00:00 (SP 1)            23:30 (SP 48)
-     Early       Nord Pool   EPEX Auction Closes      Delivery Starts         Delivery Ends
-     Forecast    Window      [FIRM TRADING POSITION]
-```
-
-### Why Naive Forecasting Evaluations Fail in Production:
-1. **Lookahead Bias**: A common flaw in standard evaluations is pairing actual generation with the latest forecast published *after* gate closure. In reality, a trader at 11:00 GMT on D-1 **cannot** see forecasts published at 17:00 GMT or during intraday continuous trading.
-2. **Abstract Metrics vs Real P&L**: Reporting MAE in Megawatts (MW) is insufficient for an energy trading desk. A 500 MW deficit during peak demand creates catastrophic imbalance cash-out penalties (System Buy Price), whereas a 500 MW surplus merely spills into the market at discounted rates (System Sell Price).
-3. **Operational Procurement Buffers**: Traders do not trade on point forecasts alone; they require conservative safety margins (P90/P95 thermal procurement buffers) to avoid expensive emergency Balancing Mechanism dispatches.
+# REint Energy Analytics Platform
+### Day-Ahead Wind Generation Forecasting & Power Trading Decision System
 
 ---
 
-## 🌟 Standout Features & Differentiators
+## Executive Summary
 
-This solution goes far beyond basic CRUD and chart plotting. It embodies real product thinking tailored directly to an energy desk:
+The REint Energy Analytics Platform is an institutional-grade forecasting evaluation and commercial decision support system designed for Great Britain (GB) power market participants. Operating within the Balancing and Settlement Code (BSC) framework governed by Elexon and National Grid ESO, the platform bridges numerical weather prediction (NWP) forecasting data with day-ahead wholesale power trading and dispatch hedging.
 
-### 1. 💷 £ Financial Impact & Imbalance Exposure Calculator
-* **Concept**: Converts abstract MW errors into actual GBP (£) cash-out penalty exposure under Elexon BSC Section T rules.
-* **Mechanism**: 
-  - **Shortfall (Over-forecast)**: Utility is short $\to$ purchases emergency balancing power at System Buy Price (SBP, default £120/MWh). $\text{Penalty} = \Delta \text{MW} \times 0.5\text{h} \times (\text{SBP} - \text{DA\_Price})$.
-  - **Surplus (Under-forecast)**: Utility is long $\to$ dumps surplus energy at System Sell Price (SSP, default £45/MWh).
-* **Interactive Controls**: Real-time sliders for SBP, SSP, and Day-Ahead clearing price calculate total portfolio loss, interval averages, and worst single-period peak exposure.
-
-### 2. 🧠 REint AI Statistical Bias-Correction Lab
-* **Concept**: Demonstrates REint's analytical value proposition on top of raw Elexon NWP forecasts.
-* **Mechanism**: Applies a trailing-window rolling mean debiasing algorithm (configurable 3, 7, 14 days) across all 48 settlement periods.
-* **Results**: Measurably reduces MAE and eliminates systematic over-forecasting bias before placing bids in the EPEX auction.
-
-### 3. ⏳ Gate Closure Sensitivity ("The Value of Time")
-* **Concept**: Quantifies how forecast accuracy and financial exposure evolve as decisions move closer to physical delivery.
-* **Hedge Horizons**: Evaluates MAE, RMSE, and Imbalance Cost across 07:00, 09:00, 11:00 (DA), 14:00, 17:00, 22:00, and Intraday rolling forecasts.
-* **Trader Insight**: Quantifies the exact risk premium paid for locking positions Day-Ahead vs participating in intraday continuous markets.
-
-### 4. 🛡️ Operational Thermal Procurement Buffer (P90 / P95)
-* Non-parametric quantile analysis calculating the exact MW thermal backup capacity needed to ensure 90% or 95% protection against sudden wind drop-offs.
-
-### 5. 🕒 48 Settlement Period Diurnal Analysis
-* Breakdown across all 48 half-hour UK settlement periods, flagging evening peak ramp hours (SP 34–38: 16:30–19:00 GMT) where wind forecast inaccuracy poses the highest grid risk.
+Wholesale power traders, portfolio dispatchers, and risk managers face a persistent challenge: standard forecast metrics (e.g., Mean Absolute Error in Megawatts) fail to capture the asymmetric financial penalties incurred in real-time settlement. This platform provides an end-to-end framework to ingest actual generation outturn, reconstruct decision-horizon forecasts without lookahead bias, quantify monetary exposure under System Buy and System Sell cash-out prices, and apply adaptive statistical debiasing prior to auction submission.
 
 ---
 
-## 🏗️ System Architecture
+## Market Mechanics & Theoretical Framework
+
+### Day-Ahead Gate Closure & Lookahead Bias Prevention
+
+Under standard UK power exchange mechanisms (e.g., EPEX SPOT and Nord Pool UK), the Day-Ahead (DA) auction clears on Day D-1 at 11:00 GMT for physical delivery across the 48 half-hour settlement periods of Day D.
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                    React 18 + Vite Frontend                 │
-│  - Interactive Recharts TimeSeries & Settlement Heatmaps    │
-│  - Financial Imbalance Calculator (P&L Simulation)          │
-│  - Bias Correction Engine Lab                               │
-│  - Gate Closure Sensitivity Curves                          │
-│  - One-click CSV Data Export                                │
-└──────────────────────────────┬──────────────────────────────┘
-                               │ HTTP / JSON API (Port 8000)
-┌──────────────────────────────▼──────────────────────────────┐
-│                    FastAPI Backend (Python)                 │
-│  ├── /api/overview          (High-level executive metrics) │
-│  ├── /api/timeseries        (Paired Day-Ahead time-series)  │
-│  ├── /api/metrics           (MAE, RMSE, MAPE, Ramps, Buffers)│
-│  ├── /api/settlement-analysis (48 SP diurnal profiles)      │
-│  ├── /api/daily-breakdown   (January 2026 day-by-day stats) │
-│  ├── /api/financial-impact  (£ GBP imbalance calculator)    │
-│  ├── /api/bias-correction   (Rolling debiasing alpha engine)│
-│  └── /api/gate-closure-sensitivity (Multi-gate comparisons) │
-└──────────────────────────────┬──────────────────────────────┘
-                               │ SQLite Engine (Indexed)
-┌──────────────────────────────▼──────────────────────────────┐
-│                     Database Layer (SQLite)                 │
-│  - actual_generation    (1,488 records: Jan 1 - Jan 31 2026)│
-│  - forecast_generation  (7,440 records: multi-run NWPs)     │
-│  - Zero Lookahead Bias Enforcement Logic                    │
-└─────────────────────────────────────────────────────────────┘
+                    Timeline: Decision to Physical Settlement
+
+      Day D-1 (11:00 GMT)                                Day D (Delivery)
+───────────────┬───────────────────────────────┬─────────────────────────────────►
+               │                               │
+        Gate Closure Cutoff             Settlement Period 1             Settlement Period 48
+        Bids Locked Firm                (00:00 - 00:30 GMT)             (23:30 - 24:00 GMT)
+        Forecast Filter Applied         Physical Delivery Starts        End of Delivery Day
+```
+
+To eliminate lookahead bias in historical evaluations, the system enforces a strict time-filtering constraint:
+For any delivery interval starting at $T_{\text{delivery}}$ on Day D:
+
+$$\text{Cutoff Time} = \text{Date}(T_{\text{delivery}} - 1\text{ day}) + 11:00\text{ GMT}$$
+
+$$\text{Active DA Forecast} = \arg\max_{t \le \text{Cutoff Time}} \left( \text{GenerationForecast}(T_{\text{delivery}}, t) \right)$$
+
+Any forecast published after 11:00 GMT on D-1 is strictly sequestered from the day-ahead procurement decision baseline.
+
+---
+
+## Core Analytical Capabilities
+
+### 1. Imbalance Settlement Financial Impact Engine
+
+Standard operational metrics treat over-forecasts and under-forecasts symmetrically. In wholesale power settlement, cash-out mechanisms under BSC Section T produce non-linear, asymmetric monetary penalties:
+
+- **Wind Deficit (Over-Forecast: Forecast > Actual)**:
+  The utility has under-procured thermal backup in the day-ahead auction. To balance the grid deficit, the desk must purchase balancing energy at the System Buy Price (SBP), which typically clears at a substantial premium over the day-ahead clearing price:
+  
+  $$\text{Imbalance Penalty}_{\text{deficit}} = (\text{Forecast} - \text{Actual}) \times 0.5\,\text{h} \times (\text{SBP} - P_{\text{DA}})$$
+
+- **Wind Surplus (Under-Forecast: Forecast < Actual)**:
+  The utility has over-procured base generation. The excess volume spills into the balancing mechanism and is remunerated at the System Sell Price (SSP), which typically clears at a deep discount:
+  
+  $$\text{Imbalance Penalty}_{\text{surplus}} = (\text{Actual} - \text{Forecast}) \times 0.5\,\text{h} \times (P_{\text{DA}} - \text{SSP})$$
+
+The engine computes aggregate portfolio exposure, interval cash-out averages, and tail-risk single-interval peak exposure under customizable price curves.
+
+---
+
+### 2. Statistical Bias-Correction Architecture
+
+Raw meteorological numerical forecasts frequently exhibit persistent atmospheric and turbine power curve bias. The platform features an adaptive trailing-window debiasing engine:
+
+For delivery date $d$ and settlement period $p \in [1, 48]$:
+
+$$\text{Bias}_{d, p} = \frac{1}{W} \sum_{k=1}^{W} \left( \hat{Y}_{d-k, p} - Y_{d-k, p} \right)$$
+
+$$\hat{Y}_{d, p}^{\text{corrected}} = \max\left( Y_{\text{floor}},\, \hat{Y}_{d, p} - \text{Bias}_{d, p} \right)$$
+
+Where:
+- $W$ denotes the configurable rolling calibration window (e.g., 3, 7, 14 days).
+- $Y_{\text{floor}}$ enforces physical feasibility (800 MW baseline).
+
+This debiasing layer demonstrates an immediate reduction in Mean Absolute Error (MAE) and eliminates systematic upward drift before bid submission.
+
+---
+
+### 3. Gate Closure Sensitivity & Information Decay
+
+Deciding when to firm up commercial positions involves a fundamental tradeoff between liquidity and forecast accuracy. The sensitivity analysis module evaluates forecast degradation across operational milestones:
+
+- D-1 07:00 GMT: Early morning preliminary position
+- D-1 09:00 GMT: Nord Pool auction preparation
+- D-1 11:00 GMT: EPEX SPOT DA auction gate closure (market standard)
+- D-1 14:00 GMT: Post-auction secondary trading window
+- D-1 17:00 GMT: Evening Final Physical Notification window
+- D-1 22:00 GMT: Overnight thermal dispatch revision
+- Intraday Rolling: 1-hour pre-delivery continuous position
+
+This enables trading desks to quantify the economic value of information freshness and structure optimal dual-market participation strategies.
+
+---
+
+### 4. Non-Parametric Thermal Procurement Quantiles
+
+To prevent unhedged short positions during low-wind anomalies, the platform calculates non-parametric deficit distributions:
+
+- **P90 Procurement Buffer**: Thermal capacity required to cover 90% of observed wind shortfall events.
+- **P95 Procurement Buffer**: Highly conservative reserve threshold for severe ramp-down events.
+
+---
+
+### 5. Settlement Period Diurnal Profiling
+
+Evaluation across all 48 half-hour settlement periods identifies diurnal error profiles. Special operational flags isolate peak demand hours (Settlement Periods 34 to 38, 16:30 to 19:00 GMT), where system stress and cash-out volatility reach maximum levels.
+
+---
+
+## Technical Architecture
+
+```
+┌────────────────────────────────────────────────────────────────────────┐
+│                        Client Presentation Layer                       │
+│  React 18 / TypeScript / Vite / Recharts                               │
+│  - Financial Imbalance Simulator with Parametric SBP/SSP Sliders      │
+│  - Rolling Bias-Correction Analytical Engine                           │
+│  - Multi-Horizon Gate Closure Sensitivity Curves                       │
+│  - Diurnal Heatmap & 48-Period Settlement Distribution Profiler        │
+│  - High-Volume CSV Export Facility                                     │
+└───────────────────────────────────┬────────────────────────────────────┘
+                                    │ HTTP / REST (JSON)
+┌───────────────────────────────────▼────────────────────────────────────┐
+│                         Application API Layer                          │
+│  FastAPI (Python 3.11) / Uvicorn / Pydantic v2 Models                  │
+│  - Lookahead-free Temporal Filter Engine                               │
+│  - Statistical Debiasing & Error Attribution Services                  │
+│  - Cash-Out Exposure & Balancing Mechanism Price Calculators           │
+└───────────────────────────────────┬────────────────────────────────────┘
+                                    │ SQLite Query Interface
+┌───────────────────────────────────▼────────────────────────────────────┐
+│                          Data Storage Layer                            │
+│  SQLite with B-Tree Indices                                            │
+│  - actual_generation (1,488 half-hour settlement intervals)            │
+│  - forecast_generation (7,440 multi-publish NWP forecasts)             │
+│  - Temporal Index: (start_time, publish_time DESC)                     │
+└────────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## 🚀 Quickstart Guide
+## API Specifications
 
-### Option 1: One-Command Docker Compose (Recommended)
+All endpoints serve structured JSON responses validated against Pydantic schemas.
 
-Make sure Docker and Docker Compose are installed and running:
+| Method | Endpoint | Description |
+|:---|:---|:---|
+| `GET` | `/api/health` | Service health, target scope, and database record metrics |
+| `GET` | `/api/overview` | Aggregated executive KPIs for specified date ranges and gate closures |
+| `GET` | `/api/timeseries` | Granular 30-minute outturn paired with active DA gate closure forecasts |
+| `GET` | `/api/metrics` | Quantitative accuracy metrics (MAE, RMSE, MAPE, NMAE, Ramps, Buffers) |
+| `GET` | `/api/settlement-analysis` | 48-period diurnal profile of errors, bias, and peak-hour metrics |
+| `GET` | `/api/daily-breakdown` | Calendar day performance and daily error attribution |
+| `GET` | `/api/financial-impact` | Imbalance cash-out exposure calculator with configurable SBP/SSP/DA prices |
+| `GET` | `/api/bias-correction` | Rolling debiasing model evaluation, improvement percentages, and series |
+| `GET` | `/api/gate-closure-sensitivity` | Multi-horizon error and monetary loss decay curves across gate closures |
+
+Interactive OpenAPI documentation is accessible at `/docs` when the backend service is active.
+
+---
+
+## Deployment & Operation
+
+### Deployment with Docker Compose
+
+Ensure Docker and Docker Compose are installed on the target host.
 
 ```bash
-docker compose up --build
+# Build and start all services in detached mode
+docker compose up --build -d
+
+# Verify service status
+docker compose ps
 ```
 
-- **Frontend Application**: `http://localhost:3000`
-- **Backend API Docs (Swagger)**: `http://localhost:8000/docs`
-- **Health Check**: `http://localhost:8000/api/health`
+- Web Interface: `http://localhost:3000`
+- API Service & Swagger Documentation: `http://localhost:8000/docs`
+- Health Endpoint: `http://localhost:8000/api/health`
+
+To inspect container logs:
+```bash
+docker compose logs -f
+```
 
 ---
 
-### Option 2: Local Development (Without Docker)
+### Local Environment Setup (Manual Execution)
 
-#### 1. Backend Setup
+#### Prerequisites
+- Python 3.10 or higher
+- Node.js 18 or higher with npm
+
+#### 1. Backend Service
 ```bash
 cd backend
 
-# Create virtual environment
+# Initialize Python virtual environment
 python -m venv .venv
 
 # Activate virtual environment
 # Windows:
 .\.venv\Scripts\activate
-# Linux/macOS:
+# Unix/macOS:
 source .venv/bin/activate
 
 # Install dependencies
 pip install -r requirements.txt
 
-# Start backend server
+# Start the application server
 python -m uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
-#### 2. Frontend Setup
+#### 2. Frontend Interface
 ```bash
 cd frontend
 
@@ -134,57 +221,42 @@ npm install
 # Start Vite development server
 npm run dev
 ```
-Open `http://localhost:5173` in your browser.
+
+Navigate to `http://localhost:5173` to access the application.
 
 ---
 
-## 🧪 Automated Test Suite
+## Automated Verification & Test Suite
 
-The test suite validates data ingestion, database integrity, trading gate closure cutoffs, metric invariants (e.g. $\text{RMSE} \ge \text{MAE}$), financial calculators, and all REST endpoints.
+The system includes automated integration and unit test coverage verifying database consistency, metric invariants, temporal filters, and API contracts.
 
-Run pytest from the `backend/` directory:
+Execute the test suite from the `backend/` directory:
+
 ```bash
 cd backend
 .\.venv\Scripts\python.exe -m pytest -v
 ```
 
-### Test Coverage Highlights:
-- `test_database_initialization`: Verifies schema creation and indexing.
-- `test_january_2026_data_counts`: Guarantees exactly 1,488 half-hour settlement periods (31 days × 48).
-- `test_calculate_da_cutoff_time`: Asserts zero lookahead bias at D-1 11:00 GMT cutoff.
-- `test_quantitative_accuracy_invariants`: Asserts mathematical consistency across MAE, RMSE, MAPE, and NMAE.
-- `test_thermal_procurement_buffer`: Verifies P90/P95 deficit quantile calculation.
-- `test_financial_impact_endpoint`: Verifies GBP balancing mechanism penalty computation.
-- `test_bias_correction_endpoint`: Verifies rolling debiasing engine outputs.
-- `test_gate_closure_sensitivity_endpoint`: Verifies multi-gate decay curves.
+### Invariants Verified by Test Suite:
+1. **Zero Lookahead Constraint**: Verifies that no forecast with `publish_time > cutoff` is returned in Day-Ahead evaluation sets.
+2. **Mathematical Invariant Consistency**: Asserts $\text{RMSE} \ge \text{MAE} > 0$ across all timeframes.
+3. **Database Completeness**: Guarantees exactly 1,488 outturn intervals across January 2026 ($31 \text{ days} \times 48 \text{ periods}$).
+4. **Quantile Monotonicity**: Verifies $\text{P95 Buffer} \ge \text{P90 Buffer}$.
+5. **Balancing Mechanism Bounds**: Asserts deficit penalties and surplus losses scale monotonically with cash-out spreads.
 
 ---
 
-## 📋 Comprehensive API Reference
+## Production Roadmap
 
-| Endpoint | Method | Description |
-|:---|:---:|:---|
-| `/api/health` | `GET` | Service status, database record counts, and target scope |
-| `/api/overview` | `GET` | Executive dashboard summary cards for selected date range |
-| `/api/timeseries` | `GET` | Paired 30-min actuals vs Day-Ahead gate closure forecasts |
-| `/api/metrics` | `GET` | Quantitative evaluation (MAE, RMSE, MAPE, Bias, Ramps, P90/P95 buffers) |
-| `/api/settlement-analysis` | `GET` | Diurnal profile across all 48 UK settlement periods |
-| `/api/daily-breakdown` | `GET` | Day-by-day January 2026 accuracy and volume calendar |
-| `/api/financial-impact` | `GET` | Imbalance cash-out exposure calculator in GBP with custom SBP/SSP |
-| `/api/bias-correction` | `GET` | REint rolling debiasing engine with raw vs corrected comparisons |
-| `/api/gate-closure-sensitivity`| `GET` | Sensitivity curve across 07:00, 09:00, 11:00, 14:00, 17:00, Intraday |
+1. **Battery Energy Storage System (BESS) Co-Optimization**:
+   Integration of linear programming dispatch routines to co-locate storage assets with wind portfolios, automatically absorbing wind surplus during high-SSP spreads and discharging during deficit intervals.
+
+2. **NWP Multi-Model Machine Learning Blending**:
+   Gradient boosting (XGBoost/LightGBM) trained on meteorological features (wind shear, 100m geostrophic wind speed, atmospheric pressure gradients) to produce probabilistic density forecasts.
+
+3. **Real-Time Elexon BMRS Webhook Ingestion**:
+   Direct ingestion daemon for National Grid ESO REMIT messages and real-time Initial Balancing Publication (B1610/B1630) feeds.
 
 ---
 
-## 🔮 Future Product Roadmap
-
-1. **Physical Asset Dispatch & Battery Arbitrage Optimizer**:
-   - Pair wind forecast uncertainty with co-located battery energy storage systems (BESS) to automatically absorb over-generation and discharge during deficit intervals.
-2. **NWP Machine Learning Ensemble (GBM + LSTM)**:
-   - Train gradient boosting models on historical atmospheric features (wind shear, barometric pressure gradients, temperature inversions) to generate proprietary synthetic wind power curves.
-3. **Automated Live Elexon BMRS Webhooks**:
-   - Real-time ingestion daemon listening for National Grid ESO BMRS REMIT notices and half-hourly outturn updates.
-
----
-
-**Developed for REint AI Technical Evaluation — January 2026 UK Wind Outturn Scope.**
+*REint Energy Analytics Platform. Data scope: January 2026 UK National Grid / Elexon outturn.*
