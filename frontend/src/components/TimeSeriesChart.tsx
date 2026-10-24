@@ -5,6 +5,7 @@ import {
   Area,
   Line,
   Bar,
+  Cell,
   XAxis,
   YAxis,
   Tooltip,
@@ -12,6 +13,7 @@ import {
   CartesianGrid,
   ReferenceLine
 } from 'recharts';
+
 import { Eye, EyeOff } from 'lucide-react';
 import type { TimeSeriesPoint } from '../types';
 
@@ -216,15 +218,15 @@ export const TimeSeriesChart: React.FC<TimeSeriesChartProps> = ({
               <YAxis stroke="#64748b" fontSize={10} tickLine={false} unit=" MW" />
               <ReferenceLine y={0} stroke="#94a3b8" />
               <Tooltip content={<CustomTooltip />} />
-              <Bar
-                dataKey="errorMW"
-                name="Gap MW"
-                shape={(props: any) => {
-                  const { x, y, width, height, value } = props;
-                  const fill = value > 0 ? '#dc2626' : '#0284c7';
-                  return <rect x={x} y={y} width={width} height={height} fill={fill} rx={1} />;
-                }}
-              />
+              <Bar dataKey="errorMW" name="Gap MW">
+                {chartData.map((entry, index) => (
+                  <Cell
+                    key={`cell-${index}`}
+                    fill={entry.errorMW >= 0 ? '#dc2626' : '#0284c7'}
+                  />
+                ))}
+              </Bar>
+
             </ComposedChart>
           </ResponsiveContainer>
         </div>
