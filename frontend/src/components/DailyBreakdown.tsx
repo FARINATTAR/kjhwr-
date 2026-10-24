@@ -52,19 +52,30 @@ export const DailyBreakdown: React.FC<DailyBreakdownProps> = ({ data, loading })
   };
 
   return (
-    <div className="card">
-      <div style={{ marginBottom: '16px' }}>
-        <h2 style={{ fontSize: '1.1rem', fontWeight: 600 }}>
-          Daily Forecast Accuracy Trend (January 1 – 31, 2026)
-        </h2>
-        <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+    <div className="card" style={{ display: 'flex', flexDirection: 'column' }}>
+      <div style={{
+        marginBottom: '16px',
+        minHeight: '48px',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', marginBottom: '4px' }}>
+          <h2 style={{ fontSize: '1.05rem', fontWeight: 600, margin: 0, color: '#0f172a' }}>
+            Daily Forecast Accuracy Trend (January 1 – 31, 2026)
+          </h2>
+          <span className="badge badge-info" style={{ fontSize: '0.72rem', whiteSpace: 'nowrap' }}>
+            Full Month View (31 Days)
+          </span>
+        </div>
+        <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', margin: 0 }}>
           Day-by-day forecast miss compared to average daily output
         </p>
       </div>
 
-      <div style={{ width: '100%', height: '240px' }}>
-        <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={data} margin={{ top: 10, right: 10, left: 10, bottom: 0 }}>
+      <div style={{ width: '100%', height: '280px' }}>
+        <ResponsiveContainer width="100%" height={280}>
+          <BarChart data={data} margin={{ top: 10, right: 10, left: 0, bottom: 5 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
             <XAxis
               dataKey="day"
@@ -72,6 +83,8 @@ export const DailyBreakdown: React.FC<DailyBreakdownProps> = ({ data, loading })
               fontSize={11}
               tickLine={false}
               tickFormatter={(d) => `Jan ${d}`}
+              height={38}
+              label={{ value: 'Delivery Day (January 2026)', position: 'insideBottom', offset: -2, fill: '#64748b', fontSize: 11 }}
             />
             <YAxis
               stroke="#64748b"
@@ -80,7 +93,7 @@ export const DailyBreakdown: React.FC<DailyBreakdownProps> = ({ data, loading })
               unit=" MW"
             />
             <Tooltip content={<CustomTooltip />} />
-            <Legend wrapperStyle={{ fontSize: '0.8rem', paddingTop: '8px' }} />
+            <Legend height={24} wrapperStyle={{ fontSize: '0.8rem', paddingTop: '4px' }} />
             <Bar dataKey="maeMW" name="Daily Forecast Miss (MW)" fill="#d97706" radius={[2, 2, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>

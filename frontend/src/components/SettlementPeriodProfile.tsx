@@ -68,34 +68,38 @@ export const SettlementPeriodProfile: React.FC<SettlementPeriodProfileProps> = (
   };
 
   return (
-    <div className="card" style={{ marginBottom: '24px' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '8px' }}>
-        <div>
-          <h2 style={{ fontSize: '1.1rem', fontWeight: 600 }}>
+    <div className="card" style={{ display: 'flex', flexDirection: 'column' }}>
+      <div style={{
+        marginBottom: '16px',
+        minHeight: '48px',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', marginBottom: '4px' }}>
+          <h2 style={{ fontSize: '1.05rem', fontWeight: 600, margin: 0, color: '#0f172a' }}>
             Time-of-Day Accuracy Profile
           </h2>
-          <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-            How forecast accuracy varies across the 48 half-hour slots in a day
-          </p>
-        </div>
-
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <span className="badge badge-warning">
-            Shaded: Peak Hours (16:00–19:30 GMT)
+          <span className="badge badge-warning" style={{ fontSize: '0.72rem', whiteSpace: 'nowrap' }}>
+            Peak Hours (16:00–19:30 GMT)
           </span>
         </div>
+        <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', margin: 0 }}>
+          How forecast accuracy varies across the 48 half-hour slots in a day
+        </p>
       </div>
 
       <div style={{ width: '100%', height: '280px' }}>
-        <ResponsiveContainer width="100%" height="100%">
-          <ComposedChart data={data} margin={{ top: 10, right: 10, left: 10, bottom: 0 }}>
+        <ResponsiveContainer width="100%" height={280}>
+          <ComposedChart data={data} margin={{ top: 10, right: 10, left: 0, bottom: 5 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
             <XAxis
               dataKey="settlementPeriod"
               stroke="#64748b"
               fontSize={11}
               tickLine={false}
-              label={{ value: 'Half-Hour Slot (1 - 48)', position: 'insideBottom', offset: -5, fill: '#64748b', fontSize: 11 }}
+              height={38}
+              label={{ value: 'Half-Hour Slot (1 - 48)', position: 'insideBottom', offset: -2, fill: '#64748b', fontSize: 11 }}
             />
             <YAxis
               yAxisId="left"
@@ -114,7 +118,7 @@ export const SettlementPeriodProfile: React.FC<SettlementPeriodProfileProps> = (
               unit=" MW"
             />
             <Tooltip content={<CustomTooltip />} />
-            <Legend wrapperStyle={{ fontSize: '0.8rem', paddingTop: '10px' }} />
+            <Legend height={24} wrapperStyle={{ fontSize: '0.8rem', paddingTop: '4px' }} />
 
             {/* Highlight Peak Demand SP 33 to 39 */}
             <ReferenceArea
