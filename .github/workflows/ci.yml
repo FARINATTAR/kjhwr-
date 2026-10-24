@@ -30,6 +30,9 @@ jobs:
         run: |
           cd backend
           python -m pytest -v
+        env:
+          PYTHONPATH: .
+
 
 
   frontend-build:

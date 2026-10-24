@@ -2,8 +2,9 @@
 End-to-end integration tests for FastAPI endpoints.
 """
 import pytest
-from starlette.testclient import TestClient
+from fastapi.testclient import TestClient
 from app.main import app
+
 
 client = TestClient(app)
 
