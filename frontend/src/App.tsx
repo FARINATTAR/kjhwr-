@@ -6,6 +6,9 @@ import { TimeSeriesChart } from './components/TimeSeriesChart';
 import { ProcurementInsight } from './components/ProcurementInsight';
 import { SettlementPeriodProfile } from './components/SettlementPeriodProfile';
 import { DailyBreakdown } from './components/DailyBreakdown';
+import { FinancialCalculator } from './components/FinancialCalculator';
+import { BiasCorrectionLab } from './components/BiasCorrectionLab';
+import { GateClosureCurve } from './components/GateClosureCurve';
 import { api } from './services/api';
 import type {
   TimeSeriesPoint,
@@ -14,10 +17,13 @@ import type {
   DailyBreakdownData
 } from './types';
 
+type ActiveTab = 'hedging' | 'financial' | 'bias' | 'sensitivity';
+
 export const App: React.FC = () => {
   const [gateClosureHour, setGateClosureHour] = useState<number>(11);
   const [startDate, setStartDate] = useState<string>('2026-01-01');
   const [endDate, setEndDate] = useState<string>('2026-01-05');
+  const [activeTab, setActiveTab] = useState<ActiveTab>('hedging');
 
   const [loading, setLoading] = useState<boolean>(true);
   const [timeSeries, setTimeSeries] = useState<TimeSeriesPoint[]>([]);
@@ -56,7 +62,6 @@ export const App: React.FC = () => {
 
   const handleExportCSV = async () => {
     try {
-      // Export all 1488 intervals of January 2026 at current gate closure
       const fullSeries = await api.getTimeSeries('2026-01-01', '2026-01-31', gateClosureHour);
       const rows = fullSeries.data;
       if (!rows.length) return;
@@ -108,28 +113,151 @@ export const App: React.FC = () => {
         gateClosureHour={gateClosureHour}
       />
 
-      {/* Actionable Trading Procurement & Hedging Insight */}
-      <ProcurementInsight
-        metrics={metrics}
-        gateClosureHour={gateClosureHour}
-      />
-
-      {/* Two-Column Analytics Layout: Settlement Periods 1-48 & Daily Trends */}
+      {/* Standout Module Navigation Bar */}
       <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(480px, 1fr))',
-        gap: '24px'
+        display: 'flex',
+        gap: '10px',
+        margin: '28px 0 16px',
+        padding: '6px',
+        background: 'rgba(15, 23, 42, 0.7)',
+        borderRadius: '12px',
+        border: '1px solid rgba(255, 255, 255, 0.08)',
+        flexWrap: 'wrap'
       }}>
-        <SettlementPeriodProfile
-          data={settlementProfile}
-          loading={loading}
-        />
+        <button
+          onClick={() => setActiveTab('hedging')}
+          style={{
+            flex: 1,
+            minWidth: '180px',
+            padding: '10px 16px',
+            borderRadius: '8px',
+            border: 'none',
+            background: activeTab === 'hedging' ? 'rgba(56, 189, 248, 0.18)' : 'transparent',
+            color: activeTab === 'hedging' ? '#38bdf8' : '#94a3b8',
+            fontWeight: 600,
+            fontSize: '13px',
+            cursor: 'pointer',
+            transition: 'all 0.2s ease',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '8px'
+          }}
+        >
+          <span>🛡️</span>
+          <span>Procurement & Settl. Profiles</span>
+        </button>
 
-        <DailyBreakdown
-          data={dailyTrends}
-          loading={loading}
-        />
+        <button
+          onClick={() => setActiveTab('financial')}
+          style={{
+            flex: 1,
+            minWidth: '180px',
+            padding: '10px 16px',
+            borderRadius: '8px',
+            border: 'none',
+            background: activeTab === 'financial' ? 'rgba(245, 158, 11, 0.18)' : 'transparent',
+            color: activeTab === 'financial' ? '#fbbf24' : '#94a3b8',
+            fontWeight: 600,
+            fontSize: '13px',
+            cursor: 'pointer',
+            transition: 'all 0.2s ease',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '8px'
+          }}
+        >
+          <span>💷</span>
+          <span>£ Imbalance Financials</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab('bias')}
+          style={{
+            flex: 1,
+            minWidth: '180px',
+            padding: '10px 16px',
+            borderRadius: '8px',
+            border: 'none',
+            background: activeTab === 'bias' ? 'rgba(16, 185, 129, 0.18)' : 'transparent',
+            color: activeTab === 'bias' ? '#34d399' : '#94a3b8',
+            fontWeight: 600,
+            fontSize: '13px',
+            cursor: 'pointer',
+            transition: 'all 0.2s ease',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '8px'
+          }}
+        >
+          <span>🧠</span>
+          <span>REint Bias Correction Lab</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab('sensitivity')}
+          style={{
+            flex: 1,
+            minWidth: '180px',
+            padding: '10px 16px',
+            borderRadius: '8px',
+            border: 'none',
+            background: activeTab === 'sensitivity' ? 'rgba(139, 92, 246, 0.18)' : 'transparent',
+            color: activeTab === 'sensitivity' ? '#c084fc' : '#94a3b8',
+            fontWeight: 600,
+            fontSize: '13px',
+            cursor: 'pointer',
+            transition: 'all 0.2s ease',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '8px'
+          }}
+        >
+          <span>⏳</span>
+          <span>Gate Closure Sensitivity</span>
+        </button>
       </div>
+
+      {/* Tab Content Display */}
+      {activeTab === 'hedging' && (
+        <>
+          <ProcurementInsight
+            metrics={metrics}
+            gateClosureHour={gateClosureHour}
+          />
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(480px, 1fr))',
+            gap: '24px',
+            marginTop: '20px'
+          }}>
+            <SettlementPeriodProfile
+              data={settlementProfile}
+              loading={loading}
+            />
+            <DailyBreakdown
+              data={dailyTrends}
+              loading={loading}
+            />
+          </div>
+        </>
+      )}
+
+      {activeTab === 'financial' && (
+        <FinancialCalculator gateClosureHour={gateClosureHour} />
+      )}
+
+      {activeTab === 'bias' && (
+        <BiasCorrectionLab gateClosureHour={gateClosureHour} />
+      )}
+
+      {activeTab === 'sensitivity' && (
+        <GateClosureCurve />
+      )}
+
 
       <footer style={{
         marginTop: '36px',

@@ -73,3 +73,54 @@ class DailyBreakdownItem(BaseModel):
     meanBiasMW: float
     avgActualMW: float
     avgForecastMW: float
+
+class FinancialImpactResponse(BaseModel):
+    total_imbalance_cost_gbp: float
+    deficit_cost_gbp: float
+    surplus_cost_gbp: float
+    deficit_energy_mwh: float
+    surplus_energy_mwh: float
+    avg_cost_per_interval_gbp: float
+    worst_single_deficit_gbp: float
+    worst_single_surplus_gbp: float
+    deficit_intervals: int
+    surplus_intervals: int
+    total_intervals: int
+    assumptions: Dict[str, float]
+
+class BiasCorrectionComparison(BaseModel):
+    raw_mae_mw: float
+    corrected_mae_mw: float
+    mae_improvement_pct: float
+    raw_mean_bias_mw: float
+    corrected_mean_bias_mw: float
+    bias_reduction_pct: float
+    correction_window_days: int
+    sample_count: int
+
+class BiasCorrectionPoint(BaseModel):
+    startTime: str
+    settlementDate: str
+    settlementPeriod: int
+    actualMW: float
+    dayAheadForecastMW: float
+    correctedForecastMW: float
+    errorMW: float
+    correctedErrorMW: float
+    absCorrectedErrorMW: float
+    biasAppliedMW: float
+
+class BiasCorrectionResponse(BaseModel):
+    summary: BiasCorrectionComparison
+    data: List[BiasCorrectionPoint]
+
+class GateClosureSensitivityItem(BaseModel):
+    closureLabel: str
+    closureHour: int
+    description: str
+    maeMW: float
+    rmseMW: float
+    meanBiasMW: float
+    imbalanceCostGBP: float
+    sampleCount: int
+

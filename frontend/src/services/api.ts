@@ -3,7 +3,10 @@ import type {
   TimeSeriesResponse,
   SettlementPeriodData,
   DailyBreakdownData,
-  AccuracyMetrics
+  AccuracyMetrics,
+  FinancialImpactData,
+  BiasCorrectionData,
+  GateClosureSensitivityItem
 } from '../types';
 
 const BASE_URL = import.meta.env.VITE_API_URL || '';
@@ -61,5 +64,45 @@ export const api = {
     const res = await fetch(`${BASE_URL}/api/daily-breakdown?gate_closure_hour=${gateClosureHour}`);
     if (!res.ok) throw new Error('Failed to fetch daily breakdown');
     return res.json();
+  },
+
+  async getFinancialImpact(
+    startDate: string = '2026-01-01',
+    endDate: string = '2026-01-31',
+    gateClosureHour: number = 11,
+    sbp: number = 120,
+    ssp: number = 45,
+    daPrice: number = 75
+  ): Promise<FinancialImpactData> {
+    const res = await fetch(
+      `${BASE_URL}/api/financial-impact?start_date=${startDate}&end_date=${endDate}&gate_closure_hour=${gateClosureHour}&sbp=${sbp}&ssp=${ssp}&da_price=${daPrice}`
+    );
+    if (!res.ok) throw new Error('Failed to fetch financial impact');
+    return res.json();
+  },
+
+  async getBiasCorrection(
+    startDate: string = '2026-01-01',
+    endDate: string = '2026-01-31',
+    gateClosureHour: number = 11,
+    windowDays: number = 7
+  ): Promise<BiasCorrectionData> {
+    const res = await fetch(
+      `${BASE_URL}/api/bias-correction?start_date=${startDate}&end_date=${endDate}&gate_closure_hour=${gateClosureHour}&window_days=${windowDays}`
+    );
+    if (!res.ok) throw new Error('Failed to fetch bias correction data');
+    return res.json();
+  },
+
+  async getGateClosureSensitivity(
+    startDate: string = '2026-01-01',
+    endDate: string = '2026-01-31'
+  ): Promise<GateClosureSensitivityItem[]> {
+    const res = await fetch(
+      `${BASE_URL}/api/gate-closure-sensitivity?start_date=${startDate}&end_date=${endDate}`
+    );
+    if (!res.ok) throw new Error('Failed to fetch gate closure sensitivity');
+    return res.json();
   }
 };
+

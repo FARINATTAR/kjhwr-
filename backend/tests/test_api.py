@@ -69,3 +69,30 @@ def test_daily_breakdown_endpoint():
     days = response.json()
     assert len(days) == 31  # 31 days in January
     assert days[0]["date"] == "2026-01-01"
+
+def test_financial_impact_endpoint():
+    response = client.get("/api/financial-impact?start_date=2026-01-01&end_date=2026-01-31&gate_closure_hour=11")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["total_imbalance_cost_gbp"] > 0
+    assert "deficit_cost_gbp" in data
+    assert "surplus_cost_gbp" in data
+    assert data["total_intervals"] == 1488
+
+def test_bias_correction_endpoint():
+    response = client.get("/api/bias-correction?start_date=2026-01-01&end_date=2026-01-31&gate_closure_hour=11&window_days=7")
+    assert response.status_code == 200
+    data = response.json()
+    summary = data["summary"]
+    assert "raw_mae_mw" in summary
+    assert "corrected_mae_mw" in summary
+    assert summary["sample_count"] == 1488
+    assert len(data["data"]) == 1488
+
+def test_gate_closure_sensitivity_endpoint():
+    response = client.get("/api/gate-closure-sensitivity?start_date=2026-01-01&end_date=2026-01-31")
+    assert response.status_code == 200
+    data = response.json()
+    assert len(data) >= 6
+    assert any("Intraday" in item["closureLabel"] for item in data)
+

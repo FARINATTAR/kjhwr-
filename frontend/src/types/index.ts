@@ -78,3 +78,61 @@ export interface AccuracyMetrics {
     deficit_intervals: number;
   };
 }
+
+export interface FinancialImpactData {
+  total_imbalance_cost_gbp: number;
+  deficit_cost_gbp: number;
+  surplus_cost_gbp: number;
+  deficit_energy_mwh: number;
+  surplus_energy_mwh: number;
+  avg_cost_per_interval_gbp: number;
+  worst_single_deficit_gbp: number;
+  worst_single_surplus_gbp: number;
+  deficit_intervals: number;
+  surplus_intervals: number;
+  total_intervals: number;
+  assumptions: {
+    system_buy_price_gbp_mwh: number;
+    system_sell_price_gbp_mwh: number;
+    day_ahead_price_gbp_mwh: number;
+  };
+}
+
+export interface BiasCorrectionPoint {
+  startTime: string;
+  settlementDate: string;
+  settlementPeriod: number;
+  actualMW: number;
+  dayAheadForecastMW: number;
+  correctedForecastMW: number;
+  errorMW: number;
+  correctedErrorMW: number;
+  absCorrectedErrorMW: number;
+  biasAppliedMW: number;
+}
+
+export interface BiasCorrectionData {
+  summary: {
+    raw_mae_mw: number;
+    corrected_mae_mw: number;
+    mae_improvement_pct: number;
+    raw_mean_bias_mw: number;
+    corrected_mean_bias_mw: number;
+    bias_reduction_pct: number;
+    correction_window_days: number;
+    sample_count: number;
+  };
+  data: BiasCorrectionPoint[];
+}
+
+export interface GateClosureSensitivityItem {
+  closureLabel: string;
+  closureHour: number;
+  description: string;
+  maeMW: number;
+  rmseMW: number;
+  meanBiasMW: number;
+  imbalanceCostGBP: number;
+  sampleCount: number;
+}
+

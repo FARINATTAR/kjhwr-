@@ -15,13 +15,19 @@ from app.services.metrics import (
     calculate_daily_breakdown,
     calculate_ramp_metrics
 )
+from app.services.financial import calculate_financial_impact
+from app.services.bias_correction import apply_bias_correction, compare_raw_vs_corrected
+from app.services.sensitivity import evaluate_gate_closure_sensitivity
 from app.schemas.models import (
     HealthResponse,
     OverviewResponse,
     TimeSeriesResponse,
     MetricsResponse,
     SettlementPeriodItem,
-    DailyBreakdownItem
+    DailyBreakdownItem,
+    FinancialImpactResponse,
+    BiasCorrectionResponse,
+    GateClosureSensitivityItem
 )
 
 router = APIRouter(prefix="/api")
@@ -135,3 +141,59 @@ def get_daily_performance(
         gate_closure_hour=gate_closure_hour
     )
     return calculate_daily_breakdown(paired)
+
+@router.get("/financial-impact", response_model=FinancialImpactResponse)
+def get_financial_impact(
+    start_date: str = Query(default="2026-01-01", description="Start date (YYYY-MM-DD)"),
+    end_date: str = Query(default="2026-01-31", description="End date (YYYY-MM-DD)"),
+    gate_closure_hour: int = Query(default=11, ge=0, le=23, description="Gate closure hour (D-1)"),
+    sbp: float = Query(default=120.0, description="System Buy Price (£/MWh)"),
+    ssp: float = Query(default=45.0, description="System Sell Price (£/MWh)"),
+    da_price: float = Query(default=75.0, description="Day-Ahead Price (£/MWh)")
+):
+    """
+    Quantifies the economic imbalance penalty cost in GBP resulting from wind forecast errors.
+    Translates abstract MW deviations into real trading P&L exposure.
+    """
+    paired = get_day_ahead_paired_series(
+        start_date=start_date,
+        end_date=end_date,
+        gate_closure_hour=gate_closure_hour
+    )
+    return calculate_financial_impact(paired, sbp=sbp, ssp=ssp, da_price=da_price)
+
+@router.get("/bias-correction", response_model=BiasCorrectionResponse)
+def get_bias_correction_analysis(
+    start_date: str = Query(default="2026-01-01", description="Start date (YYYY-MM-DD)"),
+    end_date: str = Query(default="2026-01-31", description="End date (YYYY-MM-DD)"),
+    gate_closure_hour: int = Query(default=11, ge=0, le=23, description="Gate closure hour (D-1)"),
+    window_days: int = Query(default=7, ge=1, le=14, description="Trailing bias calculation window in days")
+):
+    """
+    Evaluates REint's analytical bias correction layer applied to raw Elexon forecasts.
+    Returns side-by-side MAE improvement metrics and corrected time series.
+    """
+    paired = get_day_ahead_paired_series(
+        start_date=start_date,
+        end_date=end_date,
+        gate_closure_hour=gate_closure_hour
+    )
+    corrected_data = apply_bias_correction(paired, window_days=window_days)
+    summary = compare_raw_vs_corrected(paired, window_days=window_days)
+    return {
+        "summary": summary,
+        "data": corrected_data
+    }
+
+@router.get("/gate-closure-sensitivity", response_model=List[GateClosureSensitivityItem])
+def get_gate_closure_sensitivity(
+    start_date: str = Query(default="2026-01-01", description="Start date (YYYY-MM-DD)"),
+    end_date: str = Query(default="2026-01-31", description="End date (YYYY-MM-DD)")
+):
+    """
+    Evaluates forecast accuracy (MAE, RMSE, Bias) and Imbalance Cost across multiple
+    UK market gate closures (07:00, 09:00, 11:00, 14:00, 17:00, 22:00, Intraday).
+    Demonstrates the quantitative value of updated information closer to physical delivery.
+    """
+    return evaluate_gate_closure_sensitivity(start_date=start_date, end_date=end_date)
+
