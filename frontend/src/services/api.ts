@@ -1,0 +1,65 @@
+import type {
+  OverviewData,
+  TimeSeriesResponse,
+  SettlementPeriodData,
+  DailyBreakdownData,
+  AccuracyMetrics
+} from '../types';
+
+const BASE_URL = import.meta.env.VITE_API_URL || '';
+
+export const api = {
+  async getOverview(
+    startDate: string = '2026-01-01',
+    endDate: string = '2026-01-31',
+    gateClosureHour: number = 11
+  ): Promise<OverviewData> {
+    const res = await fetch(
+      `${BASE_URL}/api/overview?start_date=${startDate}&end_date=${endDate}&gate_closure_hour=${gateClosureHour}`
+    );
+    if (!res.ok) throw new Error('Failed to fetch overview metrics');
+    return res.json();
+  },
+
+  async getTimeSeries(
+    startDate: string = '2026-01-01',
+    endDate: string = '2026-01-03',
+    gateClosureHour: number = 11
+  ): Promise<TimeSeriesResponse> {
+    const res = await fetch(
+      `${BASE_URL}/api/timeseries?start_date=${startDate}&end_date=${endDate}&gate_closure_hour=${gateClosureHour}`
+    );
+    if (!res.ok) throw new Error('Failed to fetch time series');
+    return res.json();
+  },
+
+  async getMetrics(
+    startDate: string = '2026-01-01',
+    endDate: string = '2026-01-31',
+    gateClosureHour: number = 11
+  ): Promise<AccuracyMetrics> {
+    const res = await fetch(
+      `${BASE_URL}/api/metrics?start_date=${startDate}&end_date=${endDate}&gate_closure_hour=${gateClosureHour}`
+    );
+    if (!res.ok) throw new Error('Failed to fetch accuracy metrics');
+    return res.json();
+  },
+
+  async getSettlementAnalysis(
+    startDate: string = '2026-01-01',
+    endDate: string = '2026-01-31',
+    gateClosureHour: number = 11
+  ): Promise<SettlementPeriodData[]> {
+    const res = await fetch(
+      `${BASE_URL}/api/settlement-analysis?start_date=${startDate}&end_date=${endDate}&gate_closure_hour=${gateClosureHour}`
+    );
+    if (!res.ok) throw new Error('Failed to fetch settlement analysis');
+    return res.json();
+  },
+
+  async getDailyBreakdown(gateClosureHour: number = 11): Promise<DailyBreakdownData[]> {
+    const res = await fetch(`${BASE_URL}/api/daily-breakdown?gate_closure_hour=${gateClosureHour}`);
+    if (!res.ok) throw new Error('Failed to fetch daily breakdown');
+    return res.json();
+  }
+};
