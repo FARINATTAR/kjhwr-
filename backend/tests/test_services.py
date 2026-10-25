@@ -212,43 +212,48 @@ def test_cutoff_selects_latest_forecast_before_gate():
     should be selected. The 16:30 publish must be dropped when gate=11:00.
     """
     from app.database import get_db, init_db
+    from app.services.trading import get_day_ahead_paired_series
     init_db()
 
-    with get_db() as conn:
-        cursor = conn.cursor()
-        # Insert a test actual for Jan 15 SP 1
-        cursor.execute("""
-            INSERT OR REPLACE INTO actual_generation
-            (start_time, settlement_date, settlement_period, fuel_type, generation_mw)
-            VALUES ('2026-01-15T00:00:00Z', '2026-01-15', 1, 'WIND', 10000.0)
-        """)
-        # Insert two forecasts for this slot:
-        # Forecast 1: published at 10:00 D-1 (before 11:00 gate) -> should be selected
-        cursor.execute("""
-            INSERT OR REPLACE INTO forecast_generation
-            (start_time, settlement_date, settlement_period, publish_time, generation_mw)
-            VALUES ('2026-01-15T00:00:00Z', '2026-01-15', 1, '2026-01-14T10:00:00Z', 9500.0)
-        """)
-        # Forecast 2: published at 16:30 D-1 (after 11:00 gate) -> should be dropped
-        cursor.execute("""
-            INSERT OR REPLACE INTO forecast_generation
-            (start_time, settlement_date, settlement_period, publish_time, generation_mw)
-            VALUES ('2026-01-15T00:00:00Z', '2026-01-15', 1, '2026-01-14T16:30:00Z', 9800.0)
-        """)
+    test_date = "2099-01-15"
+    test_slot_time = "2099-01-15T00:00:00Z"
+    try:
+        with get_db() as conn:
+            cursor = conn.cursor()
+            cursor.execute("""
+                INSERT OR REPLACE INTO actual_generation
+                (start_time, settlement_date, settlement_period, fuel_type, generation_mw)
+                VALUES (?, ?, 1, 'WIND', 10000.0)
+            """, (test_slot_time, test_date))
 
-    from app.services.trading import get_day_ahead_paired_series
-    paired = get_day_ahead_paired_series(
-        start_date="2026-01-15",
-        end_date="2026-01-15",
-        gate_closure_hour=11
-    )
+            # Forecast 1: published at 10:00 D-1 (before 11:00 gate) -> should be selected
+            cursor.execute("""
+                INSERT OR REPLACE INTO forecast_generation
+                (start_time, settlement_date, settlement_period, publish_time, generation_mw)
+                VALUES (?, ?, 1, '2099-01-14T10:00:00Z', 9500.0)
+            """, (test_slot_time, test_date))
 
-    # Find our test slot
-    test_slot = [p for p in paired if p["startTime"] == "2026-01-15T00:00:00Z"]
-    assert len(test_slot) == 1
-    # The 10:00 forecast (9500 MW) should be selected, not the 16:30 one (9800 MW)
-    assert test_slot[0]["dayAheadForecastMW"] == 9500.0
-    assert test_slot[0]["dayAheadPublishTime"] == "2026-01-14T10:00:00Z"
+            # Forecast 2: published at 16:30 D-1 (after 11:00 gate) -> should be dropped
+            cursor.execute("""
+                INSERT OR REPLACE INTO forecast_generation
+                (start_time, settlement_date, settlement_period, publish_time, generation_mw)
+                VALUES (?, ?, 1, '2099-01-14T16:30:00Z', 9800.0)
+            """, (test_slot_time, test_date))
+
+        paired = get_day_ahead_paired_series(
+            start_date=test_date,
+            end_date=test_date,
+            gate_closure_hour=11
+        )
+
+        test_slot = [p for p in paired if p["startTime"] == test_slot_time]
+        assert len(test_slot) == 1
+        assert test_slot[0]["dayAheadForecastMW"] == 9500.0
+        assert test_slot[0]["dayAheadPublishTime"] == "2099-01-14T10:00:00Z"
+    finally:
+        with get_db() as conn:
+            conn.execute("DELETE FROM actual_generation WHERE settlement_date = ?", (test_date,))
+            conn.execute("DELETE FROM forecast_generation WHERE settlement_date = ?", (test_date,))
 
 
 def test_missing_forecast_excluded_from_paired_series():
@@ -257,38 +262,39 @@ def test_missing_forecast_excluded_from_paired_series():
     that interval must be excluded from the paired series (not imputed with actual).
     """
     from app.database import get_db, init_db
+    from app.services.trading import get_day_ahead_paired_series
     init_db()
 
-    # Create a special test date with actuals but no forecasts before gate
-    test_date = "2026-01-15"
-    with get_db() as conn:
-        cursor = conn.cursor()
-        # Clear any existing test forecasts for this specific test
-        # Insert actual for SP 48 (23:30)
-        cursor.execute("""
-            INSERT OR REPLACE INTO actual_generation
-            (start_time, settlement_date, settlement_period, fuel_type, generation_mw)
-            VALUES ('2026-01-15T23:30:00Z', '2026-01-15', 48, 'WIND', 12000.0)
-        """)
-        # Make sure no forecasts exist for SP 48 before gate closure
-        cursor.execute("""
-            DELETE FROM forecast_generation
-            WHERE start_time = '2026-01-15T23:30:00Z'
-            AND publish_time <= '2026-01-14T11:00:00Z'
-        """)
+    test_date = "2099-01-16"
+    test_slot_time = "2099-01-16T12:00:00Z"
+    try:
+        with get_db() as conn:
+            cursor = conn.cursor()
+            # Insert actual with no matching forecast before gate closure
+            cursor.execute("""
+                INSERT OR REPLACE INTO actual_generation
+                (start_time, settlement_date, settlement_period, fuel_type, generation_mw)
+                VALUES (?, ?, 25, 'WIND', 12000.0)
+            """, (test_slot_time, test_date))
 
-    from app.services.trading import get_day_ahead_paired_series
-    paired = get_day_ahead_paired_series(
-        start_date=test_date,
-        end_date=test_date,
-        gate_closure_hour=11
-    )
+            # Insert forecast published AFTER gate closure (e.g., 15:00 D-1 when gate is 11:00)
+            cursor.execute("""
+                INSERT OR REPLACE INTO forecast_generation
+                (start_time, settlement_date, settlement_period, publish_time, generation_mw)
+                VALUES (?, ?, 25, '2099-01-15T15:00:00Z', 11500.0)
+            """, (test_slot_time, test_date))
 
-    # Check that SP 48 with no forecast is excluded (not imputed)
-    sp48_slots = [p for p in paired if p["startTime"] == "2026-01-15T23:30:00Z"]
-    # Either it's excluded entirely, or if a forecast exists from real data, it's OK
-    # The key assertion: if it IS in paired, errorMW must NOT be 0.0 artificially
-    for slot in sp48_slots:
-        # If forecast was imputed with actual, error would be exactly 0
-        # With real data this is extremely unlikely, so this validates the fix
-        assert slot["dayAheadForecastMW"] != slot["actualMW"] or slot["errorMW"] == 0.0
+        paired = get_day_ahead_paired_series(
+            start_date=test_date,
+            end_date=test_date,
+            gate_closure_hour=11
+        )
+
+        # Interval should NOT be in paired series because no forecast arrived before 11:00 D-1
+        matching = [p for p in paired if p["startTime"] == test_slot_time]
+        assert len(matching) == 0, "Unpaired interval should be excluded from paired series, not imputed"
+    finally:
+        with get_db() as conn:
+            conn.execute("DELETE FROM actual_generation WHERE settlement_date = ?", (test_date,))
+            conn.execute("DELETE FROM forecast_generation WHERE settlement_date = ?", (test_date,))
+

@@ -113,6 +113,13 @@ class DataPipeline:
             actuals_count = cursor.fetchone()[0]
             cursor.execute("SELECT COUNT(*) FROM forecast_generation;")
             forecasts_count = cursor.fetchone()[0]
+            if self._data_source == "unknown" and actuals_count > 0:
+                cursor.execute("SELECT generation_mw FROM actual_generation LIMIT 1;")
+                row = cursor.fetchone()
+                if row and row[0] == int(row[0]):
+                    self._data_source = "live_elexon"
+                else:
+                    self._data_source = "seed_dataset"
             return {
                 "actuals_count": actuals_count,
                 "forecasts_count": forecasts_count,
