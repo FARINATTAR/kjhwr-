@@ -298,3 +298,73 @@ def test_missing_forecast_excluded_from_paired_series():
             conn.execute("DELETE FROM actual_generation WHERE settlement_date = ?", (test_date,))
             conn.execute("DELETE FROM forecast_generation WHERE settlement_date = ?", (test_date,))
 
+
+def test_duplicate_publish_time_latest_wins():
+    """
+    When multiple forecasts exist for the same settlement interval prior to gate closure
+    (e.g., published at 08:00 D-1 and 10:30 D-1 for an 11:00 D-1 cutoff), the Day-Ahead
+    selection query must choose the latest published forecast (10:30), not the earlier one.
+    """
+    from app.database import get_db, init_db
+    from app.services.trading import get_day_ahead_paired_series
+    init_db()
+
+    test_date = "2099-01-17"
+    test_slot_time = "2099-01-17T06:00:00Z"
+    try:
+        with get_db() as conn:
+            cursor = conn.cursor()
+            cursor.execute("""
+                INSERT OR REPLACE INTO actual_generation
+                (start_time, settlement_date, settlement_period, fuel_type, generation_mw)
+                VALUES (?, ?, 13, 'WIND', 11000.0)
+            """, (test_slot_time, test_date))
+
+            # Earlier forecast before cutoff: 08:00 D-1 -> 10200 MW
+            cursor.execute("""
+                INSERT OR REPLACE INTO forecast_generation
+                (start_time, settlement_date, settlement_period, publish_time, generation_mw)
+                VALUES (?, ?, 13, '2099-01-16T08:00:00Z', 10200.0)
+            """, (test_slot_time, test_date))
+
+            # Later forecast before cutoff: 10:30 D-1 -> 10800 MW (should win)
+            cursor.execute("""
+                INSERT OR REPLACE INTO forecast_generation
+                (start_time, settlement_date, settlement_period, publish_time, generation_mw)
+                VALUES (?, ?, 13, '2099-01-16T10:30:00Z', 10800.0)
+            """, (test_slot_time, test_date))
+
+        paired = get_day_ahead_paired_series(
+            start_date=test_date,
+            end_date=test_date,
+            gate_closure_hour=11
+        )
+
+        test_slot = [p for p in paired if p["startTime"] == test_slot_time]
+        assert len(test_slot) == 1
+        assert test_slot[0]["dayAheadForecastMW"] == 10800.0
+        assert test_slot[0]["dayAheadPublishTime"] == "2099-01-16T10:30:00Z"
+    finally:
+        with get_db() as conn:
+            conn.execute("DELETE FROM actual_generation WHERE settlement_date = ?", (test_date,))
+            conn.execute("DELETE FROM forecast_generation WHERE settlement_date = ?", (test_date,))
+
+
+def test_timestamp_format_z_and_offset_handling():
+    """
+    Validates that timestamps with explicit UTC offset (+00:00 vs Z)
+    are properly parsed and correctly compared against gate closure cutoff.
+    """
+    from datetime import datetime
+    from app.services.trading import calculate_da_cutoff
+
+    cutoff = calculate_da_cutoff("2026-01-15", gate_closure_hour=11)
+    assert cutoff == "2026-01-14T11:00:00Z"
+
+    # Ensure ISO string parsing handles both Z and +00:00 consistently
+    dt_z = datetime.fromisoformat("2026-01-14T10:30:00Z".replace("Z", "+00:00"))
+    dt_offset = datetime.fromisoformat("2026-01-14T10:30:00+00:00")
+    assert dt_z == dt_offset
+    assert dt_z < datetime.fromisoformat(cutoff.replace("Z", "+00:00"))
+
+

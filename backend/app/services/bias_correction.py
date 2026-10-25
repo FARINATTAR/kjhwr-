@@ -38,16 +38,26 @@ def apply_bias_correction(paired_series: List[Dict], window_days: int = 7) -> Li
         for j in range(window_start, i):
             trailing_items.extend(by_date[sorted_dates[j]])
 
-        # Calculate trailing mean bias (positive = systematic over-forecast)
+        # Calculate trailing mean bias per settlement period (same SP only, trailing days only)
+        # Fall back to overall trailing mean if a specific SP has no trailing items
         if trailing_items:
-            trailing_bias = sum(it["errorMW"] for it in trailing_items) / len(trailing_items)
+            overall_bias = sum(it["errorMW"] for it in trailing_items) / len(trailing_items)
+            sp_errors: Dict[int, List[float]] = {}
+            for it in trailing_items:
+                sp_errors.setdefault(it["settlementPeriod"], []).append(it["errorMW"])
+            sp_bias = {
+                sp: (sum(errs) / len(errs)) for sp, errs in sp_errors.items()
+            }
         else:
             # First day(s): no trailing data available, use zero correction
-            trailing_bias = 0.0
+            overall_bias = 0.0
+            sp_bias = {}
 
         # Apply correction to current day's intervals
         for item in by_date[date]:
-            corrected_mw = round(item["dayAheadForecastMW"] - trailing_bias, 1)
+            sp = item["settlementPeriod"]
+            applied_bias = sp_bias.get(sp, overall_bias)
+            corrected_mw = round(item["dayAheadForecastMW"] - applied_bias, 1)
             corrected_mw = max(800.0, corrected_mw)  # Physical floor
 
             corrected_error = round(corrected_mw - item["actualMW"], 1)
@@ -57,7 +67,7 @@ def apply_bias_correction(paired_series: List[Dict], window_days: int = 7) -> Li
                 "correctedForecastMW": corrected_mw,
                 "correctedErrorMW": corrected_error,
                 "absCorrectedErrorMW": round(abs(corrected_error), 1),
-                "biasAppliedMW": round(trailing_bias, 1)
+                "biasAppliedMW": round(applied_bias, 1)
             })
 
     return corrected_series

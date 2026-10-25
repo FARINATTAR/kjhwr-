@@ -214,8 +214,8 @@ def get_forecast_confidence(
     gate_closure_hour: int = Query(default=11, ge=0, le=23, description="Gate closure hour (D-1)")
 ):
     """
-    Machine Learning Forecast Confidence & Uncertainty Score.
-    Uses a Random Forest ensemble to predict forecast reliability (0-100%) and feature drivers.
+    Empirical Forecast Confidence & Uncertainty Score.
+    Uses a trailing historical error profile (strictly out-of-sample) to score forecast reliability (0-100%) and volatility drivers.
     Helps traders identify high-risk vs high-confidence settlement periods before submitting bids.
     """
     paired = get_day_ahead_paired_series(

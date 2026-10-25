@@ -69,30 +69,30 @@ graph TD
 ├── backend/                          # FastAPI analytical backend service
 │   ├── app/
 │   │   ├── api/                      # REST API routing layer
-│   │   │   ├── routes.py             # Route handlers for overview, metrics, timeseries
-│   │   │   └── analytical_routes.py  # Endpoints for financial impact, bias, confidence
+│   │   │   └── routes.py             # Route handlers for overview, metrics, timeseries, debiasing, confidence
 │   │   ├── ingestion/                # Data pipelines for Elexon BMRS
 │   │   │   ├── elexon_client.py      # HTTP client for FUELHH actuals & WINDFOR forecasts
-│   │   │   └── pipeline.py           # Ingestion orchestrator, WINDFOR hourly-to-SP expansion
+│   │   │   ├── pipeline.py           # Ingestion orchestrator, WINDFOR hourly-to-SP expansion
+│   │   │   └── seed_data.py          # Fallback generator for isolated environments
 │   │   ├── schemas/                  # Pydantic response models
 │   │   │   └── responses.py          # Data contract models for API payloads
 │   │   ├── services/                 # Core market domain & analytics logic
 │   │   │   ├── trading.py            # Strict D-1 11:00Z cutoff pairing engine
-│   │   │   ├── metrics.py            # MAE, RMSE, capped MAPE, full-distribution P90/P95
+│   │   │   ├── metrics.py            # MAE, RMSE, MAPE, full-distribution P90/P95
 │   │   │   ├── financial.py          # UK dual cash-out imbalance penalty calculator
-│   │   │   ├── bias_correction.py    # Rolling trailing-window bias removal engine
-│   │   │   ├── forecast_confidence.py# Trailing historical error reliability scorer
-│   │   │   └── gate_closure.py       # Multi-horizon forecast accuracy sensitivity
+│   │   │   ├── bias_correction.py    # Per-settlement-period trailing bias removal engine
+│   │   │   ├── forecast_model.py     # Trailing historical error reliability scorer
+│   │   │   └── sensitivity.py        # Multi-horizon forecast accuracy sensitivity
 │   │   ├── config.py                 # Environment configuration & market parameters
 │   │   ├── database.py               # SQLite schema initialization and connection manager
 │   │   └── main.py                   # FastAPI app entry point, CORS, startup lifecycle
 │   ├── data/
-│   │   └── energy_analytics.db       # Embedded SQLite database (January 2026 data)
-│   ├── tests/                        # 40-test automated verification suite
+│   │   └── energy_analytics.db       # Embedded SQLite database (January 2026 Elexon data)
+│   ├── tests/                        # 42-test automated verification suite
 │   │   ├── test_api.py               # API status codes and endpoint payload contracts
 │   │   ├── test_ingestion.py         # Pipeline, DB schema, and WINDFOR expansion tests
 │   │   ├── test_metrics.py           # Mathematical invariants (RMSE >= MAE, division safety)
-│   │   └── test_services.py          # Gate closure cutoff tests, bias correction, reserves
+│   │   └── test_services.py          # Gate closure cutoff tests, duplicate latest-wins, per-SP bias, reserves
 │   ├── Dockerfile                    # Container definition for backend
 │   └── requirements.txt              # Pinned Python dependencies
 ├── frontend/                         # React 18 trading terminal frontend

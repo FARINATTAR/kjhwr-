@@ -59,7 +59,16 @@ def init_db() -> None:
             );
         """)
         
-        # 3. Create indexes for high-speed filtering and join performance
+        # 3. Ingestion Metadata Table
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS metadata (
+                key TEXT PRIMARY KEY,
+                value TEXT NOT NULL,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+        """)
+        
+        # 4. Create indexes for high-speed filtering and join performance
         cursor.execute("CREATE INDEX IF NOT EXISTS idx_actual_start ON actual_generation(start_time);")
         cursor.execute("CREATE INDEX IF NOT EXISTS idx_actual_date_sp ON actual_generation(settlement_date, settlement_period);")
         cursor.execute("CREATE INDEX IF NOT EXISTS idx_forecast_start ON forecast_generation(start_time);")

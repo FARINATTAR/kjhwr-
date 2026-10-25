@@ -7,13 +7,24 @@ settlement periods. Each hourly forecast is mapped to 2 settlement periods.
 Supports both live Elexon BMRS ingestion and fallback seed data.
 """
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Dict, Any, List, Tuple
 from app.database import get_db, init_db
 from app.ingestion.elexon_client import ElexonClient
 from app.ingestion.seed_data import generate_january_2026_data
 
 logger = logging.getLogger(__name__)
+
+
+def _normalize_iso_z(ts_str: str) -> str:
+    """Normalizes an ISO timestamp string (+00:00 or Z) to standard UTC YYYY-MM-DDTHH:MM:SSZ format."""
+    if not ts_str:
+        return ts_str
+    try:
+        dt = datetime.fromisoformat(ts_str.replace("Z", "+00:00"))
+        return dt.astimezone(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    except Exception:
+        return ts_str
 
 
 def _derive_settlement_from_start_time(start_time_iso: str) -> Tuple[str, int, int]:
@@ -53,7 +64,7 @@ def _expand_windfor_to_half_hourly(raw_records: List[Dict[str, Any]]) -> List[Di
     expanded = []
     for record in raw_records:
         start_time = record.get("startTime", "")
-        publish_time = record.get("publishTime", "")
+        publish_time = _normalize_iso_z(record.get("publishTime", ""))
         generation = record.get("generation", 0)
 
         if not start_time:
@@ -113,13 +124,23 @@ class DataPipeline:
             actuals_count = cursor.fetchone()[0]
             cursor.execute("SELECT COUNT(*) FROM forecast_generation;")
             forecasts_count = cursor.fetchone()[0]
+
+            # 1. Read source from metadata table if present
+            try:
+                cursor.execute("SELECT value FROM metadata WHERE key = 'data_source';")
+                meta_row = cursor.fetchone()
+                if meta_row:
+                    self._data_source = meta_row[0]
+            except Exception:
+                pass
+
+            # 2. If unknown but data exists, check seed signature (5952 rows = 4 seed runs)
             if self._data_source == "unknown" and actuals_count > 0:
-                cursor.execute("SELECT generation_mw FROM actual_generation LIMIT 1;")
-                row = cursor.fetchone()
-                if row and row[0] == int(row[0]):
-                    self._data_source = "live_elexon"
-                else:
+                if forecasts_count == 5952:
                     self._data_source = "seed_dataset"
+                else:
+                    self._data_source = "live_elexon"
+
             return {
                 "actuals_count": actuals_count,
                 "forecasts_count": forecasts_count,
@@ -129,24 +150,13 @@ class DataPipeline:
     def seed_database_if_needed(self, force: bool = False) -> Dict[str, Any]:
         """
         Ensures the January 2026 dataset is present in SQLite.
-        If tables are empty or force is True, ingests data.
+        If tables are empty, contains seed data, or force is True, ingests live Elexon data.
         Attempts live Elexon API first, falls back to seed data only if API fails.
         """
         stats = self.get_database_stats()
-        if not force and stats["actuals_count"] > 0 and stats["forecasts_count"] > 0:
-            # Check if existing data is from Elexon or seed
-            with get_db() as conn:
-                cursor = conn.cursor()
-                cursor.execute("SELECT generation_mw FROM actual_generation LIMIT 1;")
-                row = cursor.fetchone()
-                # Real Elexon FUELHH returns integer MW (whole numbers like 15538)
-                # Seed data returns decimals like 13500.3
-                if row and row[0] == int(row[0]):
-                    self._data_source = "live_elexon"
-                else:
-                    self._data_source = "seed_dataset"
-
-            logger.info(f"Database already populated: {stats}")
+        # If database is already populated with real Elexon data, do not overwrite unless forced
+        if not force and stats["actuals_count"] > 0 and stats["forecasts_count"] > 0 and stats["data_source"] == "live_elexon":
+            logger.info(f"Database already populated with real Elexon data: {stats}")
             return {
                 "status": "already_populated",
                 "source": self._data_source,
@@ -170,6 +180,9 @@ class DataPipeline:
 
         if live_actuals and live_forecasts_raw:
             self._data_source = "live_elexon"
+            for act in live_actuals:
+                act["startTime"] = _normalize_iso_z(act.get("startTime", ""))
+                act["publishTime"] = _normalize_iso_z(act.get("publishTime", ""))
             actuals_to_insert = live_actuals
 
             # Expand hourly WINDFOR to half-hourly with derived settlement fields
@@ -208,6 +221,12 @@ class DataPipeline:
                     :startTime, :settlementDate, :settlementPeriod, :publishTime, :generation
                 );
             """, forecasts_to_insert)
+
+            # Persist ingestion metadata
+            cursor.execute("""
+                INSERT OR REPLACE INTO metadata (key, value)
+                VALUES ('data_source', ?);
+            """, (self._data_source,))
 
         new_stats = self.get_database_stats()
         logger.info(f"Database sync complete. Source: {self._data_source}, Stats: {new_stats}")
