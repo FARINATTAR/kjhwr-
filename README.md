@@ -3,12 +3,8 @@
 **Day-Ahead Wind Generation Forecasting and Decision Terminal for UK Wholesale Electricity Markets**
 
 <p>
-  <a href="https://windcast-analytics.vercel.app"><img src="https://img.shields.io/badge/Live_App-windcast--analytics.vercel.app-059669?style=for-the-badge&logo=vercel" alt="Live App"/></a>
+  <a href="https://kjhwr-jet.vercel.app"><img src="https://img.shields.io/badge/Live_App-kjhwr--jet.vercel.app-059669?style=for-the-badge&logo=vercel" alt="Live App"/></a>
   <a href="https://windcast-analytics-api.onrender.com/docs"><img src="https://img.shields.io/badge/API_Docs-Swagger-0284c7?style=for-the-badge&logo=fastapi" alt="API Docs"/></a>
-</p>
-<p>
-  <a href="https://github.com/FARINATTAR/kjhwr-"><img src="https://img.shields.io/badge/Tests-31%2F31_Passing-10b981?style=for-the-badge&logo=pytest" alt="Tests"/></a>
-  <a href="https://github.com/FARINATTAR/kjhwr-"><img src="https://img.shields.io/badge/CI_Pipeline-Passing-10b981?style=for-the-badge&logo=githubactions" alt="CI"/></a>
 </p>
 
 ---
@@ -27,6 +23,19 @@ WindCast closes this gap by:
 
 ---
 
+## Data Source
+
+All data comes directly from the **Elexon BMRS API** for **January 2026**:
+
+- **FUELHH** (actual wind generation, half-hourly): 1,488 records (31 days × 48 settlement periods)
+- **WINDFOR** (wind generation forecasts, hourly): ~18,000+ raw records expanded to ~35,000+ half-hourly records
+
+WINDFOR forecasts are published hourly by Elexon. Since the UK electricity market settles on half-hourly intervals, each hourly forecast is mapped to two settlement periods (e.g., a forecast for 14:00 applies to both SP 29 at 14:00–14:30 and SP 30 at 14:30–15:00).
+
+No synthetic or seed data is used in the deployed application. The backend fetches directly from `data.elexon.co.uk` on first startup and caches in SQLite.
+
+---
+
 ## Architecture
 
 ```mermaid
@@ -36,9 +45,9 @@ graph TD
     B --> D["Metrics Service<br/><i>MAE, RMSE, ramp rates, settlement profiles</i>"]
     B --> E["Bias Correction<br/><i>Rolling window debiasing per time slot</i>"]
     B --> F["Financial Engine<br/><i>Imbalance penalty calculation</i>"]
-    B --> G["Forecast Model<br/><i>Random Forest reliability scoring</i>"]
+    B --> G["Confidence Scoring<br/><i>Trailing error profile reliability scores</i>"]
     B --> H["Sensitivity Analysis<br/><i>Multi-horizon error decay</i>"]
-    C --> I["SQLite Database<br/><i>1,488 actuals + 5,952 forecasts</i><br/><i>January 2026, UK National Grid ESO</i>"]
+    C --> I["SQLite Database<br/><i>Elexon BMRS FUELHH + WINDFOR</i><br/><i>January 2026</i>"]
     D --> I
     E --> I
     F --> I
@@ -52,7 +61,71 @@ graph TD
 
 **Hosting**: Frontend on Vercel, Backend on Render.
 
-**Data**: UK National Grid ESO FUELHH (actual wind output, half-hourly) and WINDFOR (day-ahead forecasts) for January 2026.
+---
+
+## Repository Structure
+
+```
+├── backend/                          # FastAPI analytical backend service
+│   ├── app/
+│   │   ├── api/                      # REST API routing layer
+│   │   │   ├── routes.py             # Route handlers for overview, metrics, timeseries
+│   │   │   └── analytical_routes.py  # Endpoints for financial impact, bias, confidence
+│   │   ├── ingestion/                # Data pipelines for Elexon BMRS
+│   │   │   ├── elexon_client.py      # HTTP client for FUELHH actuals & WINDFOR forecasts
+│   │   │   └── pipeline.py           # Ingestion orchestrator, WINDFOR hourly-to-SP expansion
+│   │   ├── schemas/                  # Pydantic response models
+│   │   │   └── responses.py          # Data contract models for API payloads
+│   │   ├── services/                 # Core market domain & analytics logic
+│   │   │   ├── trading.py            # Strict D-1 11:00Z cutoff pairing engine
+│   │   │   ├── metrics.py            # MAE, RMSE, capped MAPE, full-distribution P90/P95
+│   │   │   ├── financial.py          # UK dual cash-out imbalance penalty calculator
+│   │   │   ├── bias_correction.py    # Rolling trailing-window bias removal engine
+│   │   │   ├── forecast_confidence.py# Trailing historical error reliability scorer
+│   │   │   └── gate_closure.py       # Multi-horizon forecast accuracy sensitivity
+│   │   ├── config.py                 # Environment configuration & market parameters
+│   │   ├── database.py               # SQLite schema initialization and connection manager
+│   │   └── main.py                   # FastAPI app entry point, CORS, startup lifecycle
+│   ├── data/
+│   │   └── energy_analytics.db       # Embedded SQLite database (January 2026 data)
+│   ├── tests/                        # 40-test automated verification suite
+│   │   ├── test_api.py               # API status codes and endpoint payload contracts
+│   │   ├── test_ingestion.py         # Pipeline, DB schema, and WINDFOR expansion tests
+│   │   ├── test_metrics.py           # Mathematical invariants (RMSE >= MAE, division safety)
+│   │   └── test_services.py          # Gate closure cutoff tests, bias correction, reserves
+│   ├── Dockerfile                    # Container definition for backend
+│   └── requirements.txt              # Pinned Python dependencies
+├── frontend/                         # React 18 trading terminal frontend
+│   ├── src/
+│   │   ├── components/               # Modular analytical UI cards & charts
+│   │   │   ├── Header.tsx            # Navigation, status indicators, and data source badge
+│   │   │   ├── DecisionBar.tsx       # Date range, gate closure, and parameter controls
+│   │   │   ├── KpiCards.tsx          # Headline KPIs: MAE, RMSE, MAPE, imbalance costs
+│   │   │   ├── TimeSeriesChart.tsx   # Interactive actual vs forecast line chart
+│   │   │   ├── SettlementPeriodProfile.tsx # 48-period daily error shape & peak indicators
+│   │   │   ├── DailyBreakdown.tsx    # Daily progression and trends
+│   │   │   ├── FinancialCalculator.tsx # Dynamic SBP/SSP market stress simulator
+│   │   │   ├── BiasCorrectionLab.tsx # Interactive debiasing lab with window selector
+│   │   │   ├── GateClosureCurve.tsx  # Forecast decay across lead times (D-1 11:00 to gate)
+│   │   │   ├── ForecastConfidenceLab.tsx # Reliability score and historical error tier
+│   │   │   └── ProcurementInsight.tsx# Thermal reserve procurement recommendations
+│   │   ├── services/                 # Frontend API client
+│   │   │   └── api.ts                # Axios-based typed HTTP client with error handling
+│   │   ├── types/                    # TypeScript interfaces matching backend models
+│   │   │   └── index.ts              # Data contracts for all analytical endpoints
+│   │   ├── App.tsx                   # Main dashboard layout, state management, API sync
+│   │   ├── index.css                 # Custom CSS design system (dark trading terminal)
+│   │   └── main.tsx                  # React entry point
+│   ├── Dockerfile                    # Multi-stage production container build (Vite + Nginx)
+│   ├── nginx.conf                    # Nginx reverse proxy configuration for Docker
+│   ├── package.json                  # NPM packages & build scripts
+│   ├── vercel.json                   # Vercel deployment and routing configuration
+│   └── vite.config.ts                # Vite bundler configuration
+├── docs/                             # In-depth architectural & domain documentation
+│   └── ARCHITECTURE_AND_DOMAIN_GUIDE.md # Technical lead review & domain walkthrough
+├── docker-compose.yml                # One-command local production stack
+└── render.yaml                       # Render cloud deployment blueprint
+```
 
 ---
 
@@ -68,6 +141,8 @@ Cutoff = (Delivery Date - 1 day) + 11:00 GMT
 
 Any forecast published after the cutoff is excluded. This guarantees no future information leaks into predictions.
 
+If no forecast exists for a settlement period at gate closure, that interval is excluded from the paired series (not imputed with the actual value, which would artificially reduce error to zero).
+
 ### 2. Penalty Calculation
 
 When wind output differs from the forecast, penalties apply:
@@ -75,18 +150,18 @@ When wind output differs from the forecast, penalties apply:
 **Over-predicted** (forecast > actual) -- the utility is short on power and must buy emergency supply at a higher price (System Buy Price):
 
 ```
-Deficit Penalty = (Forecast - Actual) x 0.5h x (Buy Price - Auction Price)
+Deficit Penalty = (Forecast - Actual) × 0.5h × (Buy Price - Auction Price)
 ```
 
 **Under-predicted** (forecast < actual) -- the utility has excess power and must sell at a lower price (System Sell Price):
 
 ```
-Surplus Loss = (Actual - Forecast) x 0.5h x (Auction Price - Sell Price)
+Surplus Loss = (Actual - Forecast) × 0.5h × (Auction Price - Sell Price)
 ```
 
 ### 3. Bias Correction
 
-Forecasts often have a consistent lean (e.g., always over-predicting by 200 MW). The system detects and corrects this using a rolling average of recent errors:
+Forecasts often have a consistent lean (e.g., always over-predicting by some MW). The system detects and corrects this using a rolling average of recent errors:
 
 ```
 Bias = Average of (Forecast - Actual) over past W days, per time slot
@@ -96,18 +171,13 @@ Corrected Forecast = max(800 MW, Original Forecast - Bias)
 
 The 800 MW floor prevents corrections from producing impossibly low values. Configurable windows: 1, 3, or 7 days.
 
-**Result**: 15.2% reduction in MAE, GBP 14,200 in avoided penalties.
-
 ### 4. Reserve Sizing
 
-How much backup thermal capacity should the utility keep ready?
-
-- **P90 (+1,842 MW)**: Covers 90% of historical wind shortfalls
-- **P95 (+2,197 MW)**: Conservative buffer for extreme weather events
+How much backup thermal capacity should the utility keep ready? P90 and P95 buffers are computed over the full error distribution (all intervals, not just deficit intervals) to give a true population percentile.
 
 ### 5. Reliability Scoring
 
-A Random Forest model (scikit-learn) scores each forecast 0--100% based on how consistent the forecast signals are across different publish times, time-of-day patterns, and recent actual output.
+A trailing historical error profile scores each forecast 0–100% based on how large the average absolute error has been for the same settlement period over the preceding days. This is fully out-of-sample (no data leakage) — each day's confidence is based only on errors from previous days.
 
 ---
 
@@ -117,51 +187,41 @@ Interactive docs: [windcast-analytics-api.onrender.com/docs](https://windcast-an
 
 | Endpoint | What it returns |
 |:--|:--|
-| `GET /api/health` | System status and database record counts |
-| `GET /api/overview` | Summary KPIs (key performance indicators) for a date range |
+| `GET /api/health` | System status, database counts, and data source (live_elexon or seed) |
+| `GET /api/overview` | Summary KPIs for a date range |
 | `GET /api/timeseries` | Half-hourly actual vs forecast series |
 | `GET /api/metrics` | Accuracy metrics: MAE, RMSE, MAPE, reserve buffers |
 | `GET /api/settlement-analysis` | 48-period daily profile with peak hour flags |
-| `GET /api/daily-breakdown` | Day-by-day error trends for January 2026 |
+| `GET /api/daily-breakdown` | Day-by-day error trends for a date range |
 | `GET /api/financial-impact` | Penalty exposure under configurable price scenarios |
 | `GET /api/bias-correction` | Debiased forecast series and error improvement |
 | `GET /api/gate-closure-sensitivity` | How accuracy changes across forecast horizons |
-| `GET /api/forecast-confidence` | ML reliability score with feature importance |
+| `GET /api/forecast-confidence` | Reliability score with error drivers |
 
 Common parameters: `start_date`, `end_date`, `gate_closure_hour`, `window_days`, `sbp`, `ssp`, `da_price`.
 
 ---
 
-## Evaluation and Testing
-
-31 tests, all passing. CI runs on every push via GitHub Actions.
+## Testing
 
 ```bash
 cd backend
 python -m pytest tests/ -v
 ```
 
-### Guardrails
+### What the tests verify
 
-| Guardrail | Status | Tests |
-|:--|:--|:--|
-| Zero-lookahead (no future data leakage) | Passed | 2 |
-| Error metric consistency (RMSE >= MAE > 0) | Passed | 2 |
-| Extreme weather stress tests (storms and calm spells) | Passed | 2 |
-| Physical output floor (minimum 800 MW) | Passed | 2 |
-| Financial penalty conservation (zero error = zero cost) | Passed | 2 |
-| API contracts and data integrity (all 10 endpoints) | Passed | 21 |
-| **Total** | **All Passed** | **31** |
-
-### Enforced Invariants
-
-| Rule | Meaning |
+| Area | What is tested |
 |:--|:--|
-| `RMSE >= MAE > 0` | RMSE always equals or exceeds MAE (mathematical property) |
-| `P95 >= P90 > 0` | Conservative reserve is always at least as large as standard |
-| `Corrected forecast >= 800 MW` | No forecast drops below minimum physical wind output |
-| `Zero error = GBP 0 penalty` | A perfect forecast incurs no penalty |
-| `Higher price spread = higher penalty` | Penalties grow when market stress increases |
+| Data source | Database contains real Elexon data (not seed), data_source = live_elexon |
+| WINDFOR expansion | Hourly forecasts correctly mapped to both odd and even settlement periods |
+| Gate closure cutoff | Later publish (16:30) dropped when gate is 11:00, earlier publish (10:00) selected |
+| Missing forecast | Intervals without a DA forecast are excluded, not imputed with actual |
+| Metric invariants | RMSE >= MAE, zero-division safety, ramp edge cases |
+| Financial rules | Zero error = zero penalty, higher SBP = higher cost |
+| Bias correction | Physical floor (800 MW) enforced, systematic bias removed |
+| Confidence scores | All scores bounded 0–100%, valid tiers |
+| All API endpoints | Correct status codes, response structure, date range filtering |
 
 ---
 
@@ -169,7 +229,7 @@ python -m pytest tests/ -v
 
 | Component | URL |
 |:--|:--|
-| Dashboard | [windcast-analytics.vercel.app](https://windcast-analytics.vercel.app) |
+| Dashboard | [kjhwr-jet.vercel.app](https://kjhwr-jet.vercel.app) |
 | API Docs | [windcast-analytics-api.onrender.com/docs](https://windcast-analytics-api.onrender.com/docs) |
 | Health Check | [windcast-analytics-api.onrender.com/api/health](https://windcast-analytics-api.onrender.com/api/health) |
 
@@ -212,24 +272,28 @@ npm run dev                     # Opens at http://localhost:5173
 |:--|:--|
 | Frontend | React 18, TypeScript, Vite, Recharts |
 | Backend | Python 3.11, FastAPI, Uvicorn, Pydantic v2 |
-| ML | scikit-learn (Random Forest) |
 | Database | SQLite with temporal indexing |
+| Data Source | Elexon BMRS API (FUELHH + WINDFOR) |
 | CI/CD | GitHub Actions, Vercel, Render |
-| Testing | pytest (31 tests) |
+| Testing | pytest |
 
 ---
 
 ## AI Tools Used
 
-Built with pair-programming assistance from:
-
-- **Claude Opus 4.6 Thinking** -- architecture, backend services, test suite, and market mechanic modeling
-- **Gemini 3.8 Flash Medium** -- frontend scaffolding, code review, and UI iteration
+Built with pair-programming assistance from **Antigravity IDE**.
 
 ---
 
-## Future Scope
+## WINDFOR Alignment Rule
 
-- **Battery storage dispatch** -- optimize when to charge/discharge batteries based on wind surplus and deficit patterns
-- **Weather model blending** -- combine multiple weather forecast sources (ECMWF, GFS, UK Met Office) using gradient boosting for better wind predictions
-- **Live market data streaming** -- connect to Elexon BMRS for real-time balancing prices and outage notifications
+Elexon WINDFOR provides forecasts with hourly `startTime` values (e.g. `2026-01-01T00:00:00Z`). The UK settlement market operates on half-hourly intervals. Each hourly forecast is duplicated to cover both half-hours:
+
+| WINDFOR startTime | Settlement Period 1 | Settlement Period 2 |
+|:--|:--|:--|
+| 00:00 | SP 1 (00:00–00:30) | SP 2 (00:30–01:00) |
+| 01:00 | SP 3 (01:00–01:30) | SP 4 (01:30–02:00) |
+| ... | ... | ... |
+| 23:00 | SP 47 (23:00–23:30) | SP 48 (23:30–00:00) |
+
+January 2026 is entirely in GMT (no daylight saving time transitions), so UTC timestamps map directly to settlement periods without offset.
