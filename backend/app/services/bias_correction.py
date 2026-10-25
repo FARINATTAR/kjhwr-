@@ -71,7 +71,19 @@ def compare_raw_vs_corrected(paired_series: List[Dict], window_days: int = 7) ->
     corrected = apply_bias_correction(paired_series, window_days)
 
     if not corrected:
-        return {"raw_mae": 0.0, "corrected_mae": 0.0, "improvement_pct": 0.0}
+        return {
+            "raw_mae_mw": 0.0,
+            "corrected_mae_mw": 0.0,
+            "mae_improvement_pct": 0.0,
+            "raw_mean_bias_mw": 0.0,
+            "corrected_mean_bias_mw": 0.0,
+            "bias_reduction_pct": 0.0,
+            "correction_window_days": window_days,
+            "sample_count": 0,
+            "raw_mae": 0.0,
+            "corrected_mae": 0.0,
+            "improvement_pct": 0.0,
+        }
 
     n = len(corrected)
     raw_mae = sum(item["absErrorMW"] for item in corrected) / n
